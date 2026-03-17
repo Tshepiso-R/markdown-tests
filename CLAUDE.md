@@ -8,7 +8,7 @@ This project uses markdown files to define and execute tests. No scripts — Cla
 
 1. Test plans live in `test-plans/` as `.md` files
 2. Claude reads a test plan, opens the browser, and executes each test case
-3. Results are saved to `test-reports/[module]-[date].md`
+3. Results are saved to `test-reports/[scenario]-[date].md`
 
 ---
 
