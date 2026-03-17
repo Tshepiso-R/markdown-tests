@@ -11,14 +11,8 @@ export async function selectAntDropdown(
   optionText: string
 ) {
   await page.locator(comboboxRef).click();
-  // Wait for dropdown popup to appear, then click the option by its text content
-  const dropdown = page.locator('.ant-select-dropdown:visible');
-  await dropdown.waitFor({ state: 'visible', timeout: 10_000 });
-  await dropdown
-    .locator('.ant-select-item-option')
-    .filter({ hasText: new RegExp(`^${optionText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) })
-    .first()
-    .click();
+  // Ant Design renders dropdown in a portal. Use role-based selector.
+  await page.getByRole('option', { name: optionText, exact: true }).first().click();
 }
 
 /**
@@ -33,14 +27,8 @@ export async function selectSearchableDropdown(
   await page.locator(comboboxRef).click();
   await page.locator(comboboxRef).fill(searchText);
   await page.waitForTimeout(1000);
-  // Wait for dropdown and click the filtered option
-  const dropdown = page.locator('.ant-select-dropdown:visible');
-  await dropdown.waitFor({ state: 'visible', timeout: 10_000 });
-  await dropdown
-    .locator('.ant-select-item-option')
-    .filter({ hasText: new RegExp(`^${searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) })
-    .first()
-    .click();
+  // Ant Design renders dropdown in a portal. Use role-based selector.
+  await page.getByRole('option', { name: searchText, exact: true }).first().click();
 }
 
 /**
