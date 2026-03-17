@@ -34,12 +34,12 @@ test.describe.serial('Personal Loan Application — End to End', () => {
     await page.getByRole('textbox').nth(3).fill(TEST_CLIENT.mobile);   // Mobile
     await page.getByRole('textbox').nth(4).fill(TEST_CLIENT.email);    // Email
 
-    // Fill dropdowns (Ant Design comboboxes by rc_select index in the dialog)
-    await selectAntDropdown(page, '#rc_select_2', TEST_CLIENT.title);           // Title
-    await selectAntDropdown(page, '#rc_select_3', TEST_CLIENT.clientType);      // Client Type
-    await selectAntDropdown(page, '#rc_select_4', TEST_CLIENT.province);        // Province
-    await selectAntDropdown(page, '#rc_select_5', TEST_CLIENT.preferredComm);   // Preferred Communication
-    await selectAntDropdown(page, '#rc_select_6', TEST_CLIENT.leadChannel);     // Lead Channel
+    // Fill dropdowns (using label-based selectors for stability)
+    await selectAntDropdown(page, 'Title', TEST_CLIENT.title);
+    await selectAntDropdown(page, 'Client Type', TEST_CLIENT.clientType);
+    await selectAntDropdown(page, 'Province', TEST_CLIENT.province);
+    await selectAntDropdown(page, 'Preferred Communication', TEST_CLIENT.preferredComm);
+    await selectAntDropdown(page, 'Lead Channel', TEST_CLIENT.leadChannel);
 
     // Submit
     await page.getByRole('button', { name: 'OK' }).click();
@@ -108,7 +108,7 @@ test.describe.serial('Personal Loan Application — End to End', () => {
     await waitForShesha(page);
 
     // Set Opportunity Owner
-    await selectAntDropdown(page, '#rc_select_8', 'Fatima Abrahams');
+    await selectAntDropdown(page, 'Opportunity Owner', 'Fatima Abrahams');
 
     // Update Client Name to "Ian" and enter ID Number
     const clientNameField = page.getByRole('textbox').nth(1);
@@ -117,21 +117,21 @@ test.describe.serial('Personal Loan Application — End to End', () => {
     await page.getByRole('textbox').first().fill(TEST_CLIENT.idNumber); // Client ID Number
 
     // Country dropdowns (searchable)
-    await selectSearchableDropdown(page, '#rc_select_12', TEST_CLIENT.country); // Country Of Residence
-    await selectSearchableDropdown(page, '#rc_select_13', TEST_CLIENT.country); // Citizenship
-    await selectSearchableDropdown(page, '#rc_select_15', TEST_CLIENT.country); // Country Of Origin
+    await selectSearchableDropdown(page, 'Country Of Residence', TEST_CLIENT.country);
+    await selectSearchableDropdown(page, 'Citizenship', TEST_CLIENT.country);
+    await selectSearchableDropdown(page, 'Country Of Origin', TEST_CLIENT.country);
 
     // Client Classification
-    await selectAntDropdown(page, '#rc_select_16', TEST_CLIENT.classification);
+    await selectAntDropdown(page, 'Client Classification', TEST_CLIENT.classification);
 
     // Residential Address (Google Places)
     await fillGooglePlacesAddress(page, '100 Main Street, Johannesburg');
 
     // Provincial Office
-    await selectAntDropdown(page, '#rc_select_19', 'Provincial Office');
+    await selectAntDropdown(page, 'Provincial Office', 'Provincial Office');
 
     // Marital Status — set to Single, leave Marital Regime empty
-    await selectAntDropdown(page, '#rc_select_20', TEST_CLIENT.maritalStatus);
+    await selectAntDropdown(page, 'Marital Status', TEST_CLIENT.maritalStatus);
 
     // Save
     await page.getByRole('button', { name: /Save/ }).click();
@@ -163,12 +163,12 @@ test.describe.serial('Personal Loan Application — End to End', () => {
     await page.getByRole('textbox').nth(1).fill(LOAN_INFO.requestedAmount);  // Requested Amount
 
     // Dropdowns
-    await selectAntDropdown(page, '#rc_select_17', LOAN_INFO.existingRelationship); // Existing Relationship
-    await selectAntDropdown(page, '#rc_select_18', LOAN_INFO.sourcesOfIncome);       // Sources Of Income
+    await selectAntDropdown(page, 'Existing Relationship with Bank', LOAN_INFO.existingRelationship);
+    await selectAntDropdown(page, 'Sources Of Income', LOAN_INFO.sourcesOfIncome);
     await page.keyboard.press('Escape');
 
-    // Add Loan Purpose row
-    await selectAntDropdown(page, '#rc_select_19', LOAN_INFO.loanPurpose);  // Purpose dropdown in header row
+    // Add Loan Purpose row — Purpose dropdown is in the table header row
+    await selectAntDropdown(page, 'Purpose', LOAN_INFO.loanPurpose);
     await page.keyboard.press('Escape');
     await page.getByRole('row', { name: /plus-circle/ }).getByRole('textbox').fill(LOAN_INFO.loanPurposeAmount);
     await page.getByRole('button', { name: 'plus-circle' }).click();
@@ -225,7 +225,7 @@ test.describe.serial('Personal Loan Application — End to End', () => {
     await waitForShesha(page);
 
     // Select Years Of Farming Experience
-    await selectAntDropdown(page, '#rc_select_0', '4 to 6 Years');
+    await selectAntDropdown(page, 'Years Of Farming Experience', '4 to 6 Years');
     await page.keyboard.press('Escape');
 
     // Check all checklist items (checkboxes)

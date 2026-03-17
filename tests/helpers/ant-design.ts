@@ -7,11 +7,24 @@ import { Page } from '@playwright/test';
  */
 export async function selectAntDropdown(
   page: Page,
-  comboboxRef: string,
+  labelOrRef: string,
   optionText: string
 ) {
-  await page.locator(comboboxRef).click();
-  // Ant Design renders dropdown in a portal. Use role-based selector.
+  // Try label-based first (more stable), fall back to ID ref
+  if (labelOrRef.startsWith('#')) {
+    await page.locator(labelOrRef).click();
+  } else {
+    // Find the form item by label, then click its .ant-select-selector
+    await page.locator('.ant-form-item, .sha-components-container-inner')
+      .filter({ hasText: labelOrRef })
+      .first()
+      .locator('.ant-select-selector')
+      .first()
+      .click();
+  }
+  // Wait for option to appear and click it
+  await page.getByRole('option', { name: optionText, exact: true })
+    .waitFor({ state: 'visible', timeout: 10_000 });
   await page.getByRole('option', { name: optionText, exact: true }).first().click();
 }
 
@@ -21,13 +34,25 @@ export async function selectAntDropdown(
  */
 export async function selectSearchableDropdown(
   page: Page,
-  comboboxRef: string,
+  labelOrRef: string,
   searchText: string
 ) {
-  await page.locator(comboboxRef).click();
-  await page.locator(comboboxRef).fill(searchText);
+  // Find the dropdown input by label or ID
+  let input;
+  if (labelOrRef.startsWith('#')) {
+    input = page.locator(labelOrRef);
+  } else {
+    input = page.locator('.ant-form-item, .sha-components-container-inner')
+      .filter({ hasText: labelOrRef })
+      .first()
+      .locator('.ant-select-selection-search-input')
+      .first();
+  }
+  await input.click();
+  await input.fill(searchText);
   await page.waitForTimeout(1000);
-  // Ant Design renders dropdown in a portal. Use role-based selector.
+  await page.getByRole('option', { name: searchText, exact: true })
+    .waitFor({ state: 'visible', timeout: 10_000 });
   await page.getByRole('option', { name: searchText, exact: true }).first().click();
 }
 
