@@ -1,0 +1,18 @@
+{
+  "name": "landbank-crm-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "report": "npx playwright show-report",
+    "allure:generate": "npx allure generate allure-results -o allure-report --clean",
+    "allure:open": "npx allure open allure-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "allure-playwright": "^3.0.0",
+    "allure-commandline": "^2.30.0",
+    "dotenv": "^16.4.0"
+  }
+}

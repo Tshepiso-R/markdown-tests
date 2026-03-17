@@ -1,0 +1,75 @@
+# Test Execution Rules
+
+These rules govern how Claude should execute markdown test plans.
+
+---
+
+## Before Testing
+
+1. **Read the full test plan** before touching the browser
+2. **Check prereqs** — if login is needed, do it first using env credentials
+3. **Navigate to the target URL** and take a snapshot to confirm you're on the right page
+4. **Do not guess** — if the UI doesn't match the test plan, stop and report the discrepancy
+
+---
+
+## During Testing
+
+### Navigation
+- Use browser snapshot before every action to see current state
+- Never assume a page has loaded — verify with a snapshot
+- If a page redirects unexpectedly, note it and continue
+
+### Filling Forms
+- Always snapshot after filling each field to confirm the value took
+- For dropdowns: snapshot to see available options, then select
+- For date pickers: use keyboard input if the picker is complex
+- Clear existing field values before typing new ones
+
+### Clicking / Submitting
+- Snapshot before clicking to confirm the target is visible
+- Snapshot after clicking to verify the outcome
+- If a dialog/modal appears, handle it and note it in the report
+
+### Waiting
+- Never use arbitrary delays
+- Use `browser_wait_for` with a visible element or URL change
+- If something takes more than 30 seconds, mark it as a potential performance issue
+
+---
+
+## Assertions
+
+- For each assertion in the test case, explicitly verify it via snapshot or page content
+- Mark each assertion checkbox: `[x]` for pass, `[!]` for fail
+- If an assertion fails, capture a screenshot and continue to the next test case
+- Never skip assertions — every one must be evaluated
+
+---
+
+## On Failure
+
+1. **Screenshot** the current state
+2. **Note** the exact step that failed
+3. **Note** what was expected vs what actually happened
+4. **Continue** to the next test case (don't abort the whole run)
+5. If the failure blocks subsequent tests (e.g., record not created), note which tests were skipped and why
+
+---
+
+## After Testing
+
+1. Fill in the **Report Structure** section from the test plan
+2. Save the report to `test-reports/[module]-YYYY-MM-DD.md`
+3. Summarize: total pass/fail/skip, top issues, and recommendations
+4. If any test plan steps are outdated (UI changed), note what needs updating
+
+---
+
+## What NOT to Do
+
+- Do NOT hardcode credentials in reports or test plans
+- Do NOT create new records unless the test explicitly requires it
+- Do NOT modify the test plan during execution — report discrepancies instead
+- Do NOT skip a test case without documenting why
+- Do NOT assume a previous test's state carries over — each case is independent

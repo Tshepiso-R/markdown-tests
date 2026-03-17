@@ -1,0 +1,63 @@
+trigger: none
+
+schedules:
+  - cron: '0 2 * * *'
+    displayName: 'Nightly E2E Run'
+    branches:
+      include: [main]
+    always: true
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: landbank-crm-e2e-secrets
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Install Node.js'
+
+  - script: npm ci
+    displayName: 'Install dependencies'
+
+  - script: npx playwright install --with-deps chromium
+    displayName: 'Install Playwright browsers'
+
+  - script: npx playwright test
+    displayName: 'Run E2E tests'
+    env:
+      BASE_URL: $(BASE_URL)
+      ADMIN_USER: $(ADMIN_USER)
+      ADMIN_PASS: $(ADMIN_PASS)
+      RM_USER: $(RM_USER)
+      RM_PASS: $(RM_PASS)
+    continueOnError: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: 'test-results/results.xml'
+      mergeTestResults: true
+      testRunTitle: 'LandBank CRM E2E'
+    condition: always()
+    displayName: 'Publish test results'
+
+  - script: npx allure generate allure-results -o allure-report --clean
+    displayName: 'Generate Allure report'
+    condition: always()
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: 'allure-report'
+      artifact: 'allure-report'
+    condition: always()
+    displayName: 'Publish Allure report'
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: 'test-results'
+      artifact: 'playwright-traces'
+    condition: failed()
+    displayName: 'Publish traces on failure'
