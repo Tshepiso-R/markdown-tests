@@ -37,32 +37,36 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
-            You are running an automated E2E test on GitHub Actions CI. Run ID: ${{ github.run_id }}.
+            You are running an automated E2E test on GitHub Actions CI. Run ID: ${{ github.run_id }}. BE EFFICIENT — minimize snapshots, do NOT take screenshots, batch form fills where possible.
 
             Instructions:
-            1. Read test-plans/RULES.md first (includes mandatory ID reuse rule and evidence capture rules)
+            1. Read test-plans/RULES.md (ID reuse rule is mandatory)
             2. Read test-plans/${{ inputs.test_plan || 'e2e-personal-loan-application' }}.md
             3. Execute ALL test cases sequentially
-            4. For TC-06: you MUST click Awaiting Review and review all verification tabs before clicking Finalise
-            5. For EACH test case, record: the page URL, take screenshots at key moments, and save them to test-reports/screenshots/
-            6. Generate a report and save it to test-reports/${{ inputs.test_plan || 'e2e-personal-loan-application' }}-ci-${{ github.run_id }}-$(date +%Y-%m-%dT%H-%M).md
-            7. Each TC section in the report MUST include: URL field, Snapshots table, Input vs Output table
-            8. Flag any unusual UI behavior, UX issues, or things that need improvement in a UX Observations section
-            9. At the end, print RESULT: PASS or RESULT: FAIL
+            4. For TC-06: click Awaiting Review, review all verification tabs, then Finalise
+            5. Generate report to test-reports/${{ inputs.test_plan || 'e2e-personal-loan-application' }}-ci-${{ github.run_id }}-$(date +%Y-%m-%dT%H-%M).md
+            6. Each TC section needs: URL and pass/fail result. No screenshots in CI.
+            7. Add UX Observations section at the end if any issues found
+            8. Print RESULT: PASS or RESULT: FAIL
+
+            EFFICIENCY RULES FOR CI:
+            - Do NOT take screenshots or save images
+            - Do NOT snapshot after every field — only snapshot when needed to find elements
+            - Use fill_form to batch multiple fields at once
+            - After selecting a dropdown, move to the next field immediately
+            - Only snapshot after save/submit to verify success
 
             Environment: QA at landbankcrm-adminportal-qa.shesha.app
-            Admin account: admin / ${{ secrets.ADMIN_PASSWORD }}
-            RM account: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
+            Admin: admin / ${{ secrets.ADMIN_PASSWORD }}
+            RM: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
 
-            MANDATORY TEST IDs (reuse these — new IDs cost money):
-            - 7708206169188 (Ian Houvet) — for Personal applicant and Entity director
-            - 7304190225085 (Chamaine Houvet) — for Entity director / spouse
-            - 6311115651080 (Xolile Ndlangana) — for Entity director
+            MANDATORY IDs (reuse — new ones cost money):
+            - 7708206169188 (Ian Houvet)
+            - 7304190225085 (Chamaine Houvet)
+            - 6311115651080 (Xolile Ndlangana)
             - Entity reg: 2012/225386/07
 
-            Generate a unique lead name using format: AutoCI${{ github.run_id }}
-
-            Do NOT skip any steps. Do NOT use new ID numbers. Be efficient.
+            Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
           claude_args: "--max-turns 400 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
         env:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
