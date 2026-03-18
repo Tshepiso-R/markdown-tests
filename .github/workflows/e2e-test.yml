@@ -10,6 +10,7 @@ on:
         options:
           - e2e-personal-loan-application
           - e2e-entity-loan-application
+          - e2e-negative-edge-cases
   schedule:
     - cron: "0 3 * * 1-5"
 

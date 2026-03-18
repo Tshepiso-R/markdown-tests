@@ -51,6 +51,132 @@ jobs:
           // Configure marked for GitHub-flavored markdown
           marked.setOptions({ gfm: true, breaks: true });
 
+          // ─── Assertion parser ───
+          function parseAssertions(content) {
+            const lines = content.split('\n');
+            let totalAssertions = 0;
+            let passedAssertions = 0;
+
+            for (const line of lines) {
+              // Match table rows with YES/NO in Match column
+              // Pattern: | ... | ... | ... | YES | or | ... | ... | ... | NO |
+              const tableMatch = line.match(/\|[^|]+\|[^|]+\|[^|]+\|\s*(YES|NO)\s*\|/i);
+              if (tableMatch) {
+                totalAssertions++;
+                if (tableMatch[1].toUpperCase() === 'YES') passedAssertions++;
+                continue;
+              }
+              // Match table rows with [!] FAIL in the Match column
+              const failMatch = line.match(/\|\s*\[!\]\s*FAIL\s*\|/i);
+              if (failMatch) {
+                totalAssertions++;
+                // already counted as fail (not incrementing passed)
+                continue;
+              }
+              // Match inline [x] pass markers (checkbox style)
+              if (line.match(/\[x\]/i) && !line.match(/\|/)) {
+                totalAssertions++;
+                passedAssertions++;
+                continue;
+              }
+              // Match inline [!] fail markers (not in tables, already handled above)
+              if (line.match(/\*\*\[!\]/) && !line.match(/\|.*\|.*\|/)) {
+                totalAssertions++;
+                // fail - don't increment passed
+                continue;
+              }
+            }
+
+            return { total: totalAssertions, passed: passedAssertions };
+          }
+
+          // ─── Table-to-cards converter (post-process HTML) ───
+          function tablesToCards(html) {
+            // Replace each <table>...</table> with card layout
+            return html.replace(/<table>([\s\S]*?)<\/table>/g, function(match, inner) {
+              // Extract headers from <thead> or first <tr> with <th>
+              const headerMatch = inner.match(/<thead>\s*<tr>([\s\S]*?)<\/tr>\s*<\/thead>/);
+              const headers = [];
+              if (headerMatch) {
+                const thRegex = /<th[^>]*>([\s\S]*?)<\/th>/g;
+                let thMatch;
+                while ((thMatch = thRegex.exec(headerMatch[1])) !== null) {
+                  headers.push(thMatch[1].trim());
+                }
+              }
+
+              // If no headers found, try first row with <th> tags
+              if (headers.length === 0) {
+                const firstRowMatch = inner.match(/<tr>([\s\S]*?)<\/tr>/);
+                if (firstRowMatch) {
+                  const thRegex = /<th[^>]*>([\s\S]*?)<\/th>/g;
+                  let thMatch;
+                  while ((thMatch = thRegex.exec(firstRowMatch[1])) !== null) {
+                    headers.push(thMatch[1].trim());
+                  }
+                }
+              }
+
+              // If still no headers, return original table
+              if (headers.length === 0) return match;
+
+              // Extract body rows from <tbody> or all <tr> with <td>
+              const bodyMatch = inner.match(/<tbody>([\s\S]*?)<\/tbody>/);
+              const bodyHTML = bodyMatch ? bodyMatch[1] : inner;
+              const rows = [];
+              const rowRegex = /<tr>([\s\S]*?)<\/tr>/g;
+              let rowMatch;
+              while ((rowMatch = rowRegex.exec(bodyHTML)) !== null) {
+                const cells = [];
+                const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
+                let tdMatch;
+                while ((tdMatch = tdRegex.exec(rowMatch[1])) !== null) {
+                  cells.push(tdMatch[1].trim());
+                }
+                if (cells.length > 0) rows.push(cells);
+              }
+
+              if (rows.length === 0) return match;
+
+              // Build cards
+              let cardsHTML = '<div class="card-grid">';
+              for (const row of rows) {
+                // Determine if this row has a match/status column
+                const lastCell = row[row.length - 1] || '';
+                const lastHeader = (headers[headers.length - 1] || '').toLowerCase();
+                const isMatchCol = lastHeader === 'match' || lastHeader === 'followed';
+                let statusClass = '';
+                if (isMatchCol) {
+                  if (lastCell.match(/YES/i)) statusClass = ' card-pass';
+                  else if (lastCell.match(/NO|\[!\]|FAIL/i)) statusClass = ' card-fail';
+                  else if (lastCell === '—' || lastCell === '-') statusClass = ' card-skip';
+                }
+
+                cardsHTML += '<div class="data-card' + statusClass + '">';
+                for (let c = 0; c < row.length && c < headers.length; c++) {
+                  const isStatus = isMatchCol && c === row.length - 1;
+                  if (isStatus) {
+                    // Render as a status badge
+                    let badgeClass = 'badge-skip';
+                    let label = row[c];
+                    if (row[c].match(/YES/i)) { badgeClass = 'badge-pass'; label = 'PASS'; }
+                    else if (row[c].match(/NO|\[!\]|FAIL/i)) { badgeClass = 'badge-fail'; label = 'FAIL'; }
+                    else if (row[c] === '—' || row[c] === '-') { badgeClass = 'badge-skip'; label = 'N/A'; }
+                    cardsHTML += '<div class="card-status"><span class="badge ' + badgeClass + '">' + label + '</span></div>';
+                  } else {
+                    cardsHTML += '<div class="card-field">';
+                    cardsHTML += '<span class="card-label">' + headers[c] + '</span>';
+                    cardsHTML += '<span class="card-value">' + row[c] + '</span>';
+                    cardsHTML += '</div>';
+                  }
+                }
+                cardsHTML += '</div>';
+              }
+              cardsHTML += '</div>';
+              return cardsHTML;
+            });
+          }
+
           // Gather all report files
           const reportsDir = 'test-reports';
           const files = fs.readdirSync(reportsDir)
@@ -101,7 +227,10 @@ jobs:
 
             const isCi = name.includes('ci-');
 
-            return { file, name, date, passed, failed, skipped, total, duration, title, category, isCi, content };
+            // Parse assertions
+            const assertions = parseAssertions(content);
+
+            return { file, name, date, passed, failed, skipped, total, duration, title, category, isCi, content, assertions };
           });
 
           // Group by date
@@ -117,6 +246,8 @@ jobs:
           const totalPassed = reports.reduce((s, r) => s + r.passed, 0);
           const totalFailed = reports.reduce((s, r) => s + r.failed, 0);
           const totalCases = reports.reduce((s, r) => s + r.total, 0);
+          const totalAssertionsPassed = reports.reduce((s, r) => s + r.assertions.passed, 0);
+          const totalAssertionsAll = reports.reduce((s, r) => s + r.assertions.total, 0);
 
           // Category labels and badge classes
           const categoryMeta = {
@@ -146,7 +277,7 @@ jobs:
             .date-group { margin-bottom: 2rem; }
             .date-group h2 { color: #f0f6fc; font-size: 1.1rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #21262d; display: flex; align-items: center; gap: 0.5rem; }
             .date-group h2 .date-icon { color: #8b949e; }
-            .report-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s; }
+            .report-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s; flex-wrap: wrap; gap: 0.5rem; }
             .report-card:hover { border-color: #58a6ff; }
             .report-card .title { font-weight: 600; font-size: 0.95rem; }
             .report-card .meta { color: #8b949e; font-size: 0.8rem; margin-top: 0.25rem; }
@@ -154,6 +285,7 @@ jobs:
             .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
             .badge-pass { background: #1b4332; color: #2dd4bf; }
             .badge-fail { background: #4c1d1d; color: #f87171; }
+            .badge-skip { background: #21262d; color: #8b949e; }
             .badge-entity { background: #1e3a5f; color: #7dd3fc; }
             .badge-personal { background: #3b1f5e; color: #c084fc; }
             .badge-workflow { background: #3b2f1e; color: #fbbf24; }
@@ -161,6 +293,8 @@ jobs:
             .badge-other { background: #21262d; color: #8b949e; }
             .badge-ci { background: #1e293b; color: #38bdf8; }
             .badge-count { background: #21262d; color: #c9d1d9; font-variant-numeric: tabular-nums; }
+            .badge-assertions { background: #1b2e1b; color: #6ee7b7; font-variant-numeric: tabular-nums; }
+            .badge-assertions-warn { background: #3b2f1e; color: #fbbf24; font-variant-numeric: tabular-nums; }
             footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #21262d; color: #484f58; font-size: 0.8rem; text-align: center; }
           `;
 
@@ -180,10 +314,14 @@ jobs:
                 ? ' <a href="https://github.com/' + REPO + '/actions" class="badge badge-ci" title="CI Run">CI</a>'
                 : '';
               const durationText = r.duration ? ' &middot; ' + r.duration : '';
+              const assertBadgeClass = r.assertions.passed < r.assertions.total ? 'badge-assertions-warn' : 'badge-assertions';
+              const assertBadge = r.assertions.total > 0
+                ? ' <span class="badge ' + assertBadgeClass + '" title="Assertions">' + r.assertions.passed + '/' + r.assertions.total + ' assertions</span>'
+                : '';
               indexCards += '<div class="report-card">';
               indexCards += '<div><a class="title" href="reports/' + r.name + '.html">' + r.title + '</a>';
               indexCards += '<div class="meta">' + r.name + durationText + '</div></div>';
-              indexCards += '<div class="badges"><span class="badge ' + cm.badgeClass + '">' + cm.label + '</span> ' + statusBadge + ciBadge + '</div>';
+              indexCards += '<div class="badges"><span class="badge ' + cm.badgeClass + '">' + cm.label + '</span> ' + statusBadge + assertBadge + ciBadge + '</div>';
               indexCards += '</div>';
             }
             indexCards += '</div>';
@@ -203,6 +341,7 @@ jobs:
             + '<div class="stat stat-pass"><div class="stat-value">' + totalPassed + '</div><div class="stat-label">Tests Passed</div></div>'
             + '<div class="stat stat-fail"><div class="stat-value">' + totalFailed + '</div><div class="stat-label">Tests Failed</div></div>'
             + '<div class="stat"><div class="stat-value">' + totalCases + '</div><div class="stat-label">Total Test Cases</div></div>'
+            + '<div class="stat stat-pass"><div class="stat-value">' + totalAssertionsPassed + '/' + totalAssertionsAll + '</div><div class="stat-label">Assertions Passed</div></div>'
             + '</div>\n'
             + indexCards
             + '<footer>Generated automatically from test-reports/ &middot; Powered by Claude Code &middot; <a href="https://github.com/' + REPO + '">Source</a></footer>\n'
@@ -216,12 +355,31 @@ jobs:
             const prev = i < reports.length - 1 ? reports[i + 1] : null;
             const next = i > 0 ? reports[i - 1] : null;
 
-            const htmlBody = marked.parse(r.content);
+            let htmlBody = marked.parse(r.content);
+
+            // Convert tables to cards
+            htmlBody = tablesToCards(htmlBody);
 
             const navLinks = '<div class="report-nav">'
               + (prev ? '<a href="' + prev.name + '.html" class="nav-prev">&larr; ' + prev.name + '</a>' : '<span></span>')
               + (next ? '<a href="' + next.name + '.html" class="nav-next">' + next.name + ' &rarr;</a>' : '<span></span>')
               + '</div>';
+
+            // Assertion summary bar
+            const a = r.assertions;
+            const pct = a.total > 0 ? Math.round((a.passed / a.total) * 100) : 100;
+            const barColor = pct === 100 ? '#2dd4bf' : (pct >= 80 ? '#fbbf24' : '#f87171');
+            const assertionBar = a.total > 0
+              ? '<div class="assertion-bar">'
+                + '<div class="assertion-bar-header">'
+                + '<span class="assertion-bar-label">' + a.passed + '/' + a.total + ' assertions passed</span>'
+                + '<span class="assertion-bar-pct">' + pct + '%</span>'
+                + '</div>'
+                + '<div class="assertion-bar-track">'
+                + '<div class="assertion-bar-fill" style="width:' + pct + '%;background:' + barColor + '"></div>'
+                + '</div>'
+                + '</div>'
+              : '';
 
             const reportCSS = `
               body { background: #0d1117; }
@@ -229,12 +387,13 @@ jobs:
               .sticky-header .report-title { color: #f0f6fc; font-weight: 600; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
               .sticky-header a { color: #58a6ff; text-decoration: none; font-size: 0.9rem; }
               .sticky-header a:hover { text-decoration: underline; }
+              .assertion-bar { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem 1.25rem; margin: 0 auto 1.5rem; max-width: 960px; }
+              .assertion-bar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+              .assertion-bar-label { color: #f0f6fc; font-weight: 600; font-size: 0.95rem; }
+              .assertion-bar-pct { color: #8b949e; font-size: 0.85rem; font-weight: 600; }
+              .assertion-bar-track { height: 8px; background: #21262d; border-radius: 4px; overflow: hidden; }
+              .assertion-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
               .markdown-body { max-width: 960px; margin: 0 auto; padding: 2rem; }
-              .markdown-body table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
-              .markdown-body th, .markdown-body td { border: 1px solid #30363d; padding: 0.5rem 0.75rem; text-align: left; }
-              .markdown-body th { background: #161b22; color: #f0f6fc; font-weight: 600; }
-              .markdown-body tr:nth-child(even) { background: #0d1117; }
-              .markdown-body tr:nth-child(odd) { background: #161b22; }
               .markdown-body h1 { color: #58a6ff; border-bottom: 1px solid #21262d; padding-bottom: 0.5rem; margin: 1.5rem 0 1rem; }
               .markdown-body h2 { color: #f0f6fc; margin: 1.5rem 0 0.75rem; }
               .markdown-body h3 { color: #c9d1d9; margin: 1rem 0 0.5rem; }
@@ -250,6 +409,21 @@ jobs:
               .report-nav a { color: #58a6ff; font-size: 0.85rem; }
               .report-nav .nav-prev { text-align: left; }
               .report-nav .nav-next { text-align: right; }
+              .card-grid { display: flex; flex-direction: column; gap: 0.5rem; margin: 1rem 0; }
+              .data-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 0.75rem 1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.5rem 1.5rem; align-items: start; }
+              .data-card.card-pass { border-left: 3px solid #2dd4bf; }
+              .data-card.card-fail { border-left: 3px solid #f87171; }
+              .data-card.card-skip { border-left: 3px solid #484f58; }
+              .card-field { display: flex; flex-direction: column; min-width: 0; }
+              .card-label { color: #8b949e; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.15rem; }
+              .card-value { color: #f0f6fc; font-size: 0.85rem; word-break: break-word; }
+              .card-status { display: flex; align-items: center; justify-content: flex-end; }
+              @media (max-width: 600px) {
+                .data-card { grid-template-columns: 1fr; }
+                .card-status { justify-content: flex-start; }
+                .assertion-bar { margin-left: 1rem; margin-right: 1rem; }
+                .markdown-body { padding: 1rem; }
+              }
             `;
 
             const reportHTML = '<!DOCTYPE html>\n<html lang="en">\n<head>\n'
@@ -259,6 +433,7 @@ jobs:
               + '<style>' + sharedCSS + reportCSS + '</style>\n'
               + '</head>\n<body>\n'
               + '<div class="sticky-header"><a href="../">&larr; All Reports</a><span class="report-title">' + r.title + '</span><span></span></div>\n'
+              + assertionBar + '\n'
               + '<div class="markdown-body">\n'
               + htmlBody + '\n'
               + navLinks + '\n'
@@ -287,6 +462,7 @@ jobs:
           fs.writeFileSync('_site/404.html', notFoundHTML);
 
           console.log('Site built: ' + reports.length + ' report pages, index, and 404');
+          console.log('Assertion totals across all reports: ' + totalAssertionsPassed + '/' + totalAssertionsAll);
           BUILDSCRIPT
 
       - uses: actions/upload-pages-artifact@v3
