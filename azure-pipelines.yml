@@ -67,7 +67,7 @@ steps:
 
   - script: |
       echo "Testing Claude Code can run..."
-      claude -p "Say OK" --max-turns 1 2>&1 || echo "Claude basic test failed with exit code $?"
+      claude -p "Say OK" --dangerously-skip-permissions --max-turns 1 --verbose 2>&1 || echo "Claude basic test failed with exit code $?"
     displayName: "Smoke test Claude Code"
     env:
       ANTHROPIC_API_KEY: $(ANTHROPIC_API_KEY)
@@ -81,7 +81,7 @@ steps:
       cat > /tmp/ci-prompt.txt << PROMPT
       You are running an automated E2E test on Azure DevOps CI. Build ID: ${BUILD_ID}. Instructions: 1. Read test-plans/RULES.md 2. Read test-plans/${PLAN_NAME}.md 3. Execute ALL test cases (TC-01 through TC-08) sequentially 4. For TC-06: you MUST click Awaiting Review and review all 3 tabs (Overview, ID Verification, KYC Verification) before clicking Finalise 5. Generate a report and save it to test-reports/${REPORT_NAME}.md 6. At the end, print a single line: RESULT: PASS or RESULT: FAIL. Environment: QA at landbankcrm-adminportal-qa.shesha.app. Admin account: admin / ${ADMIN_PASSWORD}. RM account: fatima.abrahams@landbank.co.za / ${RM_PASSWORD}. Generate a unique lead name using format: AutoCI${BUILD_ID}. Do NOT skip any steps. Execute every test case fully. Be efficient.
       PROMPT
-      claude -p "$(cat /tmp/ci-prompt.txt)" --max-turns 200 --verbose 2>&1 | tee claude-output.log
+      claude -p "$(cat /tmp/ci-prompt.txt)" --dangerously-skip-permissions --max-turns 200 --verbose 2>&1 | tee claude-output.log
       EXIT_CODE=${PIPESTATUS[0]}
       echo "Claude exited with code: $EXIT_CODE"
       cp claude-output.log $(Build.ArtifactStagingDirectory)/claude-output.log 2>/dev/null || true
