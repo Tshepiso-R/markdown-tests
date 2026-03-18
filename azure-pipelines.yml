@@ -55,7 +55,7 @@ steps:
     displayName: "Install Playwright + Chromium"
 
   - script: |
-      npm install -g @anthropic-ai/mcp-playwright
+      npm install -g @playwright/mcp
     displayName: "Install MCP Playwright server"
 
   - script: |
@@ -91,7 +91,7 @@ steps:
         "mcpServers": {
           "playwright": {
             "command": "npx",
-            "args": ["-y", "@anthropic-ai/mcp-playwright", "--headless"]
+            "args": ["-y", "@playwright/mcp", "--headless"]
           }
         }
       }
