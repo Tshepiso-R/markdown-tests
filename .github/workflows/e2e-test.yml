@@ -53,7 +53,7 @@ jobs:
             Generate a unique lead name using format: AutoCI${{ github.run_id }}
 
             Do NOT skip any steps. Execute every test case fully. Be efficient.
-          claude_args: "--max-turns 200 --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
+          claude_args: "--max-turns 400 --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
         env:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
