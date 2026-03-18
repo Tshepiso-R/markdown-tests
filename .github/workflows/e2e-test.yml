@@ -1,0 +1,84 @@
+name: E2E Personal Loan Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_plan:
+        description: "Test plan to execute"
+        default: "e2e-personal-loan-application"
+        type: choice
+        options:
+          - e2e-personal-loan-application
+  schedule:
+    - cron: "0 3 * * 1-5"
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E tests via Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You are running an automated E2E test on GitHub Actions CI. Run ID: ${{ github.run_id }}.
+
+            Instructions:
+            1. Read test-plans/RULES.md
+            2. Read test-plans/${{ inputs.test_plan || 'e2e-personal-loan-application' }}.md
+            3. Execute ALL test cases (TC-01 through TC-08) sequentially
+            4. For TC-06: you MUST click Awaiting Review and review all 3 tabs (Overview, ID Verification, KYC Verification) before clicking Finalise
+            5. Generate a report and save it to test-reports/${{ inputs.test_plan || 'e2e-personal-loan-application' }}-ci-${{ github.run_id }}-$(date +%Y-%m-%d).md
+            6. At the end, print RESULT: PASS or RESULT: FAIL
+
+            Environment: QA at landbankcrm-adminportal-qa.shesha.app
+            Admin account: admin / ${{ secrets.ADMIN_PASSWORD }}
+            RM account: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
+
+            Generate a unique lead name using format: AutoCI${{ github.run_id }}
+
+            Do NOT skip any steps. Execute every test case fully. Be efficient.
+          max_turns: "200"
+          timeout_minutes: "75"
+          allowed_tools: "mcp__playwright__*,Read,Write,Glob,Grep,Bash(*)"
+          mcp_config: |
+            {
+              "mcpServers": {
+                "playwright": {
+                  "command": "npx",
+                  "args": ["-y", "@playwright/mcp", "--headless"]
+                }
+              }
+            }
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: test-reports/
+
+      - name: Commit report
+        if: success() && github.ref == 'refs/heads/main'
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add test-reports/*.md 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "CI: Add test report from run #${{ github.run_number }}"
+          git push || echo "Could not push report"
