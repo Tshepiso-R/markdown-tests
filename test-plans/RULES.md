@@ -80,6 +80,25 @@ These rules govern how Claude should execute markdown test plans.
 
 ---
 
+## Test Data — Reuse IDs (Cost Rule)
+
+> **CRITICAL:** Each new SA ID number triggers a paid verification API call. Always reuse the approved IDs below.
+
+| Person | ID Number | Use For |
+|--------|-----------|---------|
+| Ian Houvet | 7708206169188 | Personal loan applicant, Entity director (Married) |
+| Chamaine Houvet | 7304190225085 | Entity director (Single), Spouse of Ian |
+| Xolile Ndlangana | 6311115651080 | Entity director (Single) |
+
+**Entity registration:** 2012/225386/07 (Boxfusion)
+
+- **NEVER** generate or randomize ID numbers
+- **NEVER** use a new ID number not in this list
+- The **unique part** of each test run is the lead First Name (e.g. AutoCI12345) — not the ID
+- If a test requires a different person, ask the user for an approved ID first
+
+---
+
 ## What NOT to Do
 
 - Do NOT hardcode credentials in reports or test plans
@@ -87,4 +106,5 @@ These rules govern how Claude should execute markdown test plans.
 - Do NOT modify the test plan during execution — report discrepancies instead
 - Do NOT skip a test case without documenting why
 - Do NOT skip steps within a test case — execute every step sequentially
+- Do NOT use new SA ID numbers — reuse the approved list above (verification costs money)
 - Do NOT assume a previous test's state carries over — each case is independent
