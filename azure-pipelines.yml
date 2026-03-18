@@ -66,14 +66,6 @@ steps:
     displayName: "Configure Claude Code + MCP Playwright"
 
   - script: |
-      echo "Testing Claude Code can run..."
-      claude -p "Say OK" --dangerously-skip-permissions --max-turns 1 --verbose 2>&1 || echo "Claude basic test failed with exit code $?"
-    displayName: "Smoke test Claude Code"
-    env:
-      ANTHROPIC_API_KEY: $(ANTHROPIC_API_KEY)
-    timeoutInMinutes: 5
-
-  - script: |
       PLAN_NAME="${{ parameters.testPlan }}"
       BUILD_ID="$(Build.BuildId)"
       REPORT_NAME="${PLAN_NAME}-ci-${BUILD_ID}-$(date +%Y-%m-%d)"
