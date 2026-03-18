@@ -24,172 +24,270 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install marked
+        run: npm install marked@latest
+
       - name: Build reports site
+        env:
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          mkdir -p _site
-
-          cat > _site/index.html << 'HEADER'
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>LandBank CRM - E2E Test Reports</title>
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; padding: 2rem; }
-              .container { max-width: 900px; margin: 0 auto; }
-              h1 { color: #58a6ff; margin-bottom: 0.5rem; font-size: 1.8rem; }
-              .subtitle { color: #8b949e; margin-bottom: 2rem; }
-              .section { margin-bottom: 2rem; }
-              .section h2 { color: #f0f6fc; font-size: 1.2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #21262d; }
-              .report-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s; }
-              .report-card:hover { border-color: #58a6ff; }
-              .report-card a { color: #58a6ff; text-decoration: none; font-weight: 600; font-size: 0.95rem; }
-              .report-card a:hover { text-decoration: underline; }
-              .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
-              .badge-pass { background: #1b4332; color: #2dd4bf; }
-              .badge-fail { background: #4c1d1d; color: #f87171; }
-              .badge-entity { background: #1e3a5f; color: #7dd3fc; }
-              .badge-personal { background: #3b1f5e; color: #c084fc; }
-              .meta { color: #8b949e; font-size: 0.8rem; }
-              .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-              .stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
-              .stat-value { font-size: 1.8rem; font-weight: 700; color: #f0f6fc; }
-              .stat-label { color: #8b949e; font-size: 0.8rem; margin-top: 0.25rem; }
-              .stat-pass .stat-value { color: #2dd4bf; }
-              .stat-fail .stat-value { color: #f87171; }
-              footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #21262d; color: #484f58; font-size: 0.8rem; text-align: center; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <h1>LandBank CRM - E2E Test Reports</h1>
-              <p class="subtitle">Automated test reports from markdown-driven testing</p>
-          HEADER
-
-          # Count reports
-          TOTAL=$(ls test-reports/*.md 2>/dev/null | wc -l)
-          PERSONAL=$(ls test-reports/e2e-personal-loan*.md 2>/dev/null | wc -l)
-          ENTITY=$(ls test-reports/e2e-entity-loan*.md 2>/dev/null | wc -l)
-
-          cat >> _site/index.html << STATS
-              <div class="stats">
-                <div class="stat"><div class="stat-value">${TOTAL}</div><div class="stat-label">Total Reports</div></div>
-                <div class="stat"><div class="stat-value">${PERSONAL}</div><div class="stat-label">Personal Loan</div></div>
-                <div class="stat"><div class="stat-value">${ENTITY}</div><div class="stat-label">Entity Loan</div></div>
-                <div class="stat stat-pass"><div class="stat-value">8/8</div><div class="stat-label">Latest Pass Rate</div></div>
-              </div>
-          STATS
-
-          # Entity reports
-          echo '<div class="section"><h2>Entity (Close Corporation) Loan Reports</h2>' >> _site/index.html
-          for f in $(ls -t test-reports/e2e-entity-loan*.md 2>/dev/null); do
-            name=$(basename "$f" .md)
-            date=$(echo "$name" | grep -oP '\d{4}-\d{2}-\d{2}')
-            run=$(echo "$name" | sed 's/e2e-entity-loan-//' | sed "s/-${date}//")
-            echo "<div class=\"report-card\"><div><a href=\"reports/${name}.html\">${name}</a><br><span class=\"meta\">${date} &middot; ${run}</span></div><div><span class=\"badge badge-entity\">Entity</span> <span class=\"badge badge-pass\">PASS</span></div></div>" >> _site/index.html
-          done
-          echo '</div>' >> _site/index.html
-
-          # Personal reports
-          echo '<div class="section"><h2>Personal Loan Reports</h2>' >> _site/index.html
-          for f in $(ls -t test-reports/e2e-personal-loan*.md 2>/dev/null); do
-            name=$(basename "$f" .md)
-            date=$(echo "$name" | grep -oP '\d{4}-\d{2}-\d{2}')
-            run=$(echo "$name" | sed 's/e2e-personal-loan-//' | sed "s/-${date}//")
-            echo "<div class=\"report-card\"><div><a href=\"reports/${name}.html\">${name}</a><br><span class=\"meta\">${date} &middot; ${run}</span></div><div><span class=\"badge badge-personal\">Personal</span> <span class=\"badge badge-pass\">PASS</span></div></div>" >> _site/index.html
-          done
-          echo '</div>' >> _site/index.html
-
-          # Other reports
-          OTHER=$(ls test-reports/*.md 2>/dev/null | grep -v 'e2e-personal-loan\|e2e-entity-loan' || true)
-          if [ -n "$OTHER" ]; then
-            echo '<div class="section"><h2>Other Reports</h2>' >> _site/index.html
-            for f in $OTHER; do
-              name=$(basename "$f" .md)
-              echo "<div class=\"report-card\"><div><a href=\"reports/${name}.html\">${name}</a></div><div><span class=\"badge badge-pass\">PASS</span></div></div>" >> _site/index.html
-            done
-            echo '</div>' >> _site/index.html
-          fi
-
-          cat >> _site/index.html << 'FOOTER'
-              <footer>Generated automatically from test-reports/ &middot; Powered by Claude Code</footer>
-            </div>
-          </body>
-          </html>
-          FOOTER
-
-          # Convert each markdown report to HTML
           mkdir -p _site/reports
-          for f in test-reports/*.md; do
-            name=$(basename "$f" .md)
-            cat > "_site/reports/${name}.html" << REPORTHEAD
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>${name}</title>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown-dark.min.css">
-            <style>
-              body { background: #0d1117; padding: 2rem; }
-              .markdown-body { max-width: 900px; margin: 0 auto; }
-              .back { display: inline-block; margin-bottom: 1rem; color: #58a6ff; text-decoration: none; font-size: 0.9rem; }
-              .back:hover { text-decoration: underline; }
-            </style>
-          </head>
-          <body>
-            <div class="markdown-body">
-              <a class="back" href="../">&larr; Back to all reports</a>
-          REPORTHEAD
 
-            # Convert markdown to HTML using node
-            node -e "
-              const fs = require('fs');
-              const md = fs.readFileSync('${f}', 'utf8');
-              // Simple markdown to HTML conversion
-              let html = md
-                .replace(/^### (.*$)/gm, '<h3>\$1</h3>')
-                .replace(/^## (.*$)/gm, '<h2>\$1</h2>')
-                .replace(/^# (.*$)/gm, '<h1>\$1</h1>')
-                .replace(/\*\*(.*?)\*\*/g, '<strong>\$1</strong>')
-                .replace(/^---$/gm, '<hr>')
-                .replace(/^\| (.+)/gm, function(match) { return match; })
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>');
-              // Handle tables
-              const lines = md.split('\n');
-              let inTable = false;
-              let tableHtml = '';
-              let result = '';
-              for (const line of lines) {
-                if (line.startsWith('|')) {
-                  if (!inTable) { tableHtml = '<table>'; inTable = true; }
-                  if (line.includes('---')) continue;
-                  const cells = line.split('|').filter(c => c.trim());
-                  const tag = tableHtml === '<table>' ? 'th' : 'td';
-                  tableHtml += '<tr>' + cells.map(c => '<' + tag + '>' + c.trim() + '</' + tag + '>').join('') + '</tr>';
-                } else {
-                  if (inTable) { result += tableHtml + '</table>'; inTable = false; tableHtml = ''; }
-                  result += line.replace(/^### (.*)/, '<h3>\$1</h3>')
-                    .replace(/^## (.*)/, '<h2>\$1</h2>')
-                    .replace(/^# (.*)/, '<h1>\$1</h1>')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>\$1</strong>')
-                    .replace(/^---$/, '<hr>')
-                    .replace(/^> (.*)/, '<blockquote>\$1</blockquote>')
-                    .replace(/^- (.*)/, '<li>\$1</li>')
-                    .replace(/^\d+\. (.*)/, '<li>\$1</li>') + '\n';
+          node << 'BUILDSCRIPT'
+          const fs = require('fs');
+          const path = require('path');
+          const { marked } = require('marked');
+
+          const SITE_URL = 'https://tshepiso-r.github.io/markdown-tests';
+          const RUN_ID = process.env.GITHUB_RUN_ID || '';
+          const REPO = process.env.GITHUB_REPOSITORY || 'tshepiso-r/markdown-tests';
+          const NOW = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z/, ' UTC');
+
+          // Configure marked for GitHub-flavored markdown
+          marked.setOptions({ gfm: true, breaks: true });
+
+          // Gather all report files
+          const reportsDir = 'test-reports';
+          const files = fs.readdirSync(reportsDir)
+            .filter(f => f.endsWith('.md'))
+            .sort()
+            .reverse();
+
+          // Parse each report for metadata
+          const reports = files.map(file => {
+            const content = fs.readFileSync(path.join(reportsDir, file), 'utf8');
+            const name = file.replace('.md', '');
+
+            // Extract date from filename (YYYY-MM-DD)
+            const dateMatch = name.match(/(\d{4}-\d{2}-\d{2})/);
+            const date = dateMatch ? dateMatch[1] : 'Unknown';
+
+            // Parse Run Summary table for pass/fail counts
+            let passed = 0, failed = 0, skipped = 0, total = 0, duration = '';
+            const lines = content.split('\n');
+            let inSummary = false;
+            for (const line of lines) {
+              if (line.includes('## Run Summary')) { inSummary = true; continue; }
+              if (inSummary && line.startsWith('## ')) { inSummary = false; continue; }
+              if (inSummary && line.startsWith('|')) {
+                const cells = line.split('|').map(c => c.trim()).filter(Boolean);
+                if (cells.length >= 2) {
+                  const key = cells[0].toLowerCase();
+                  const val = cells[1];
+                  if (key.includes('total')) total = parseInt(val) || 0;
+                  if (key.includes('passed')) passed = parseInt(val) || 0;
+                  if (key.includes('failed')) failed = parseInt(val) || 0;
+                  if (key.includes('skipped')) skipped = parseInt(val) || 0;
+                  if (key.includes('duration')) duration = val;
                 }
               }
-              if (inTable) result += tableHtml + '</table>';
-              process.stdout.write(result);
-            " >> "_site/reports/${name}.html"
+            }
 
-            echo '</div></body></html>' >> "_site/reports/${name}.html"
-          done
+            // Extract title from first H1
+            const titleMatch = content.match(/^# (.+)/m);
+            const title = titleMatch ? titleMatch[1] : name;
 
-          echo "Site built with $(ls _site/reports/*.html | wc -l) report pages"
+            // Determine category
+            let category = 'other';
+            if (name.includes('entity-loan')) category = 'entity';
+            else if (name.includes('personal-loan')) category = 'personal';
+            else if (name.includes('workflow')) category = 'workflow';
+            else if (name.includes('opportunity')) category = 'opportunity';
+
+            const isCi = name.includes('ci-');
+
+            return { file, name, date, passed, failed, skipped, total, duration, title, category, isCi, content };
+          });
+
+          // Group by date
+          const byDate = {};
+          for (const r of reports) {
+            if (!byDate[r.date]) byDate[r.date] = [];
+            byDate[r.date].push(r);
+          }
+          const sortedDates = Object.keys(byDate).sort().reverse();
+
+          // Compute totals across all reports
+          const totalReports = reports.length;
+          const totalPassed = reports.reduce((s, r) => s + r.passed, 0);
+          const totalFailed = reports.reduce((s, r) => s + r.failed, 0);
+          const totalCases = reports.reduce((s, r) => s + r.total, 0);
+
+          // Category labels and badge classes
+          const categoryMeta = {
+            entity:      { label: 'Entity Loan',   badgeClass: 'badge-entity' },
+            personal:    { label: 'Personal Loan',  badgeClass: 'badge-personal' },
+            workflow:    { label: 'Workflow',        badgeClass: 'badge-workflow' },
+            opportunity: { label: 'Opportunity',     badgeClass: 'badge-opportunity' },
+            other:       { label: 'Other',           badgeClass: 'badge-other' },
+          };
+
+          // ─── Shared CSS ───
+          const sharedCSS = `
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; }
+            a { color: #58a6ff; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            .container { max-width: 960px; margin: 0 auto; padding: 2rem; }
+            h1 { color: #58a6ff; margin-bottom: 0.5rem; font-size: 1.8rem; }
+            .subtitle { color: #8b949e; margin-bottom: 0.5rem; }
+            .timestamp { color: #484f58; font-size: 0.8rem; margin-bottom: 2rem; }
+            .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+            .stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
+            .stat-value { font-size: 1.8rem; font-weight: 700; color: #f0f6fc; }
+            .stat-label { color: #8b949e; font-size: 0.8rem; margin-top: 0.25rem; }
+            .stat-pass .stat-value { color: #2dd4bf; }
+            .stat-fail .stat-value { color: #f87171; }
+            .date-group { margin-bottom: 2rem; }
+            .date-group h2 { color: #f0f6fc; font-size: 1.1rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #21262d; display: flex; align-items: center; gap: 0.5rem; }
+            .date-group h2 .date-icon { color: #8b949e; }
+            .report-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s; }
+            .report-card:hover { border-color: #58a6ff; }
+            .report-card .title { font-weight: 600; font-size: 0.95rem; }
+            .report-card .meta { color: #8b949e; font-size: 0.8rem; margin-top: 0.25rem; }
+            .badges { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+            .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+            .badge-pass { background: #1b4332; color: #2dd4bf; }
+            .badge-fail { background: #4c1d1d; color: #f87171; }
+            .badge-entity { background: #1e3a5f; color: #7dd3fc; }
+            .badge-personal { background: #3b1f5e; color: #c084fc; }
+            .badge-workflow { background: #3b2f1e; color: #fbbf24; }
+            .badge-opportunity { background: #1e3b2f; color: #6ee7b7; }
+            .badge-other { background: #21262d; color: #8b949e; }
+            .badge-ci { background: #1e293b; color: #38bdf8; }
+            .badge-count { background: #21262d; color: #c9d1d9; font-variant-numeric: tabular-nums; }
+            footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #21262d; color: #484f58; font-size: 0.8rem; text-align: center; }
+          `;
+
+          // ─── Build Index ───
+          let indexCards = '';
+          for (const date of sortedDates) {
+            const dateReports = byDate[date];
+            const formattedDate = new Date(date + 'T00:00:00Z').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+            indexCards += '<div class="date-group">';
+            indexCards += '<h2><span class="date-icon">&#128197;</span> ' + formattedDate + ' <span class="badge badge-count">' + dateReports.length + ' report' + (dateReports.length !== 1 ? 's' : '') + '</span></h2>';
+            for (const r of dateReports) {
+              const cm = categoryMeta[r.category] || categoryMeta.other;
+              const statusBadge = r.failed > 0
+                ? '<span class="badge badge-fail">' + r.passed + '/' + r.total + ' PASS</span>'
+                : '<span class="badge badge-pass">' + r.passed + '/' + r.total + ' PASS</span>';
+              const ciBadge = r.isCi
+                ? ' <a href="https://github.com/' + REPO + '/actions" class="badge badge-ci" title="CI Run">CI</a>'
+                : '';
+              const durationText = r.duration ? ' &middot; ' + r.duration : '';
+              indexCards += '<div class="report-card">';
+              indexCards += '<div><a class="title" href="reports/' + r.name + '.html">' + r.title + '</a>';
+              indexCards += '<div class="meta">' + r.name + durationText + '</div></div>';
+              indexCards += '<div class="badges"><span class="badge ' + cm.badgeClass + '">' + cm.label + '</span> ' + statusBadge + ciBadge + '</div>';
+              indexCards += '</div>';
+            }
+            indexCards += '</div>';
+          }
+
+          const indexHTML = '<!DOCTYPE html>\n<html lang="en">\n<head>\n'
+            + '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+            + '<title>LandBank CRM - E2E Test Reports</title>\n'
+            + '<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#9989;</text></svg>">\n'
+            + '<style>' + sharedCSS + '</style>\n'
+            + '</head>\n<body>\n<div class="container">\n'
+            + '<h1>LandBank CRM - E2E Test Reports</h1>\n'
+            + '<p class="subtitle">Automated test reports from markdown-driven testing</p>\n'
+            + '<p class="timestamp">Last updated: ' + NOW + '</p>\n'
+            + '<div class="stats">'
+            + '<div class="stat"><div class="stat-value">' + totalReports + '</div><div class="stat-label">Total Reports</div></div>'
+            + '<div class="stat stat-pass"><div class="stat-value">' + totalPassed + '</div><div class="stat-label">Tests Passed</div></div>'
+            + '<div class="stat stat-fail"><div class="stat-value">' + totalFailed + '</div><div class="stat-label">Tests Failed</div></div>'
+            + '<div class="stat"><div class="stat-value">' + totalCases + '</div><div class="stat-label">Total Test Cases</div></div>'
+            + '</div>\n'
+            + indexCards
+            + '<footer>Generated automatically from test-reports/ &middot; Powered by Claude Code &middot; <a href="https://github.com/' + REPO + '">Source</a></footer>\n'
+            + '</div>\n</body>\n</html>';
+
+          fs.writeFileSync('_site/index.html', indexHTML);
+
+          // ─── Build individual report pages ───
+          for (let i = 0; i < reports.length; i++) {
+            const r = reports[i];
+            const prev = i < reports.length - 1 ? reports[i + 1] : null;
+            const next = i > 0 ? reports[i - 1] : null;
+
+            const htmlBody = marked.parse(r.content);
+
+            const navLinks = '<div class="report-nav">'
+              + (prev ? '<a href="' + prev.name + '.html" class="nav-prev">&larr; ' + prev.name + '</a>' : '<span></span>')
+              + (next ? '<a href="' + next.name + '.html" class="nav-next">' + next.name + ' &rarr;</a>' : '<span></span>')
+              + '</div>';
+
+            const reportCSS = `
+              body { background: #0d1117; }
+              .sticky-header { position: sticky; top: 0; z-index: 100; background: #161b22; border-bottom: 1px solid #30363d; padding: 0.75rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+              .sticky-header .report-title { color: #f0f6fc; font-weight: 600; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
+              .sticky-header a { color: #58a6ff; text-decoration: none; font-size: 0.9rem; }
+              .sticky-header a:hover { text-decoration: underline; }
+              .markdown-body { max-width: 960px; margin: 0 auto; padding: 2rem; }
+              .markdown-body table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+              .markdown-body th, .markdown-body td { border: 1px solid #30363d; padding: 0.5rem 0.75rem; text-align: left; }
+              .markdown-body th { background: #161b22; color: #f0f6fc; font-weight: 600; }
+              .markdown-body tr:nth-child(even) { background: #0d1117; }
+              .markdown-body tr:nth-child(odd) { background: #161b22; }
+              .markdown-body h1 { color: #58a6ff; border-bottom: 1px solid #21262d; padding-bottom: 0.5rem; margin: 1.5rem 0 1rem; }
+              .markdown-body h2 { color: #f0f6fc; margin: 1.5rem 0 0.75rem; }
+              .markdown-body h3 { color: #c9d1d9; margin: 1rem 0 0.5rem; }
+              .markdown-body hr { border: none; border-top: 1px solid #21262d; margin: 1.5rem 0; }
+              .markdown-body blockquote { border-left: 3px solid #30363d; padding-left: 1rem; color: #8b949e; margin: 1rem 0; }
+              .markdown-body code { background: #161b22; padding: 0.15rem 0.35rem; border-radius: 4px; font-size: 0.9em; }
+              .markdown-body pre { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+              .markdown-body pre code { background: none; padding: 0; }
+              .markdown-body strong { color: #f0f6fc; }
+              .markdown-body li { margin: 0.25rem 0; }
+              .markdown-body ul, .markdown-body ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+              .report-nav { display: flex; justify-content: space-between; margin: 2rem 0 1rem; padding-top: 1rem; border-top: 1px solid #21262d; }
+              .report-nav a { color: #58a6ff; font-size: 0.85rem; }
+              .report-nav .nav-prev { text-align: left; }
+              .report-nav .nav-next { text-align: right; }
+            `;
+
+            const reportHTML = '<!DOCTYPE html>\n<html lang="en">\n<head>\n'
+              + '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+              + '<title>' + r.name + '</title>\n'
+              + '<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128203;</text></svg>">\n'
+              + '<style>' + sharedCSS + reportCSS + '</style>\n'
+              + '</head>\n<body>\n'
+              + '<div class="sticky-header"><a href="../">&larr; All Reports</a><span class="report-title">' + r.title + '</span><span></span></div>\n'
+              + '<div class="markdown-body">\n'
+              + htmlBody + '\n'
+              + navLinks + '\n'
+              + '</div>\n'
+              + '</body>\n</html>';
+
+            fs.writeFileSync('_site/reports/' + r.name + '.html', reportHTML);
+          }
+
+          // ─── 404 page ───
+          const notFoundHTML = '<!DOCTYPE html>\n<html lang="en">\n<head>\n'
+            + '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+            + '<title>404 - Not Found</title>\n'
+            + '<style>' + sharedCSS + '\n'
+            + '.four04 { text-align: center; padding: 4rem 2rem; }\n'
+            + '.four04 h1 { font-size: 4rem; color: #f87171; margin-bottom: 1rem; }\n'
+            + '.four04 p { color: #8b949e; margin-bottom: 2rem; font-size: 1.1rem; }\n'
+            + '.four04 a { color: #58a6ff; font-size: 1rem; }\n'
+            + '</style>\n'
+            + '</head>\n<body>\n<div class="container four04">\n'
+            + '<h1>404</h1>\n'
+            + '<p>This report does not exist or may have been removed.</p>\n'
+            + '<a href="' + SITE_URL + '/">&larr; Back to all reports</a>\n'
+            + '</div>\n</body>\n</html>';
+
+          fs.writeFileSync('_site/404.html', notFoundHTML);
+
+          console.log('Site built: ' + reports.length + ' report pages, index, and 404');
+          BUILDSCRIPT
 
       - uses: actions/upload-pages-artifact@v3
 
