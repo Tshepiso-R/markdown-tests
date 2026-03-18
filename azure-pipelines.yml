@@ -71,7 +71,7 @@ steps:
     displayName: "Smoke test Claude Code"
     env:
       ANTHROPIC_API_KEY: $(ANTHROPIC_API_KEY)
-    timeoutInMinutes: 2
+    timeoutInMinutes: 5
 
   - script: |
       PLAN_NAME="${{ parameters.testPlan }}"
