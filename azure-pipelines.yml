@@ -77,49 +77,24 @@ steps:
       PLAN_NAME="${{ parameters.testPlan }}"
       BUILD_ID="$(Build.BuildId)"
       REPORT_NAME="${PLAN_NAME}-ci-${BUILD_ID}-$(date +%Y-%m-%d)"
-
       echo "Starting test run: ${REPORT_NAME}"
-      echo "Plan: test-plans/${PLAN_NAME}.md"
-
-      claude -p "
-You are running an automated E2E test on Azure DevOps CI. Build ID: ${BUILD_ID}.
-
-Instructions:
-1. Read test-plans/RULES.md
-2. Read test-plans/${PLAN_NAME}.md
-3. Execute ALL test cases (TC-01 through TC-08) sequentially
-4. For TC-06: you MUST click Awaiting Review and review all 3 tabs (Overview, ID Verification, KYC Verification) before clicking Finalise
-5. Generate a report and save it to test-reports/${REPORT_NAME}.md
-6. At the end, print a single line: RESULT: PASS or RESULT: FAIL
-
-Environment: QA — landbankcrm-adminportal-qa.shesha.app
-Admin account: admin / ${ADMIN_PASSWORD}
-RM account: fatima.abrahams@landbank.co.za / ${RM_PASSWORD}
-
-Generate a unique lead name using format: AutoCI${BUILD_ID}
-
-Do NOT skip any steps. Execute every test case fully.
-Be efficient — minimize unnecessary snapshots and commentary.
-" --max-turns 200 --verbose 2>&1 | tee claude-output.log
-
+      cat > /tmp/ci-prompt.txt << PROMPT
+      You are running an automated E2E test on Azure DevOps CI. Build ID: ${BUILD_ID}. Instructions: 1. Read test-plans/RULES.md 2. Read test-plans/${PLAN_NAME}.md 3. Execute ALL test cases (TC-01 through TC-08) sequentially 4. For TC-06: you MUST click Awaiting Review and review all 3 tabs (Overview, ID Verification, KYC Verification) before clicking Finalise 5. Generate a report and save it to test-reports/${REPORT_NAME}.md 6. At the end, print a single line: RESULT: PASS or RESULT: FAIL. Environment: QA at landbankcrm-adminportal-qa.shesha.app. Admin account: admin / ${ADMIN_PASSWORD}. RM account: fatima.abrahams@landbank.co.za / ${RM_PASSWORD}. Generate a unique lead name using format: AutoCI${BUILD_ID}. Do NOT skip any steps. Execute every test case fully. Be efficient.
+      PROMPT
+      claude -p "$(cat /tmp/ci-prompt.txt)" --max-turns 200 --verbose 2>&1 | tee claude-output.log
       EXIT_CODE=${PIPESTATUS[0]}
       echo "Claude exited with code: $EXIT_CODE"
-
       cp claude-output.log $(Build.ArtifactStagingDirectory)/claude-output.log 2>/dev/null || true
-
       if [ -f "test-reports/${REPORT_NAME}.md" ]; then
-        echo "Report generated: test-reports/${REPORT_NAME}.md"
+        echo "Report generated successfully"
       else
-        echo "##vso[task.logissue type=warning]Expected report not found: test-reports/${REPORT_NAME}.md"
-        echo "Files in test-reports/:"
+        echo "##vso[task.logissue type=warning]Report not found"
         ls -la test-reports/ 2>/dev/null || echo "No test-reports directory"
       fi
-
       if grep -q "RESULT: FAIL" claude-output.log 2>/dev/null; then
-        echo "##vso[task.logissue type=error]One or more test cases failed"
-        echo "##vso[task.complete result=Failed;]Test run failed"
+        echo "##vso[task.logissue type=error]Test run failed"
+        echo "##vso[task.complete result=Failed;]"
       fi
-
       exit $EXIT_CODE
     displayName: "Run E2E test plan via Claude Code"
     env:
