@@ -61,76 +61,77 @@ steps:
   - script: |
       mkdir -p ~/.claude
       cat > ~/.claude/settings.json << 'SETTINGS'
-      {
-        "permissions": {
-          "allow": [
-            "mcp__playwright__browser_navigate",
-            "mcp__playwright__browser_snapshot",
-            "mcp__playwright__browser_click",
-            "mcp__playwright__browser_fill_form",
-            "mcp__playwright__browser_type",
-            "mcp__playwright__browser_wait_for",
-            "mcp__playwright__browser_take_screenshot",
-            "mcp__playwright__browser_select_option",
-            "mcp__playwright__browser_press_key",
-            "mcp__playwright__browser_evaluate",
-            "mcp__playwright__browser_hover",
-            "mcp__playwright__browser_close",
-            "mcp__playwright__browser_console_messages",
-            "mcp__playwright__browser_tabs",
-            "Read",
-            "Write",
-            "Glob",
-            "Grep",
-            "Bash(git *)",
-            "Bash(ls *)",
-            "Bash(echo *)"
-          ],
-          "deny": []
-        },
-        "mcpServers": {
-          "playwright": {
-            "command": "npx",
-            "args": ["-y", "@playwright/mcp", "--headless"]
-          }
-        }
-      }
-      SETTINGS
+{
+  "permissions": {
+    "allow": [
+      "mcp__playwright__*",
+      "Read",
+      "Write",
+      "Glob",
+      "Grep",
+      "Bash(*)"
+    ],
+    "deny": []
+  },
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp", "--headless"]
+    }
+  }
+}
+SETTINGS
+      cat ~/.claude/settings.json
     displayName: "Configure Claude Code + MCP Playwright"
+
+  - script: |
+      echo "Testing Claude Code can run..."
+      claude -p "Say OK" --max-turns 1 2>&1 || echo "Claude basic test failed with exit code $?"
+    displayName: "Smoke test Claude Code"
+    env:
+      ANTHROPIC_API_KEY: $(ANTHROPIC_API_KEY)
+    timeoutInMinutes: 2
 
   - script: |
       PLAN_NAME="${{ parameters.testPlan }}"
       BUILD_ID="$(Build.BuildId)"
       REPORT_NAME="${PLAN_NAME}-ci-${BUILD_ID}-$(date +%Y-%m-%d)"
 
+      echo "Starting test run: ${REPORT_NAME}"
+      echo "Plan: test-plans/${PLAN_NAME}.md"
+
       claude -p "
-      You are running an automated E2E test on Azure DevOps CI. Build ID: ${BUILD_ID}.
+You are running an automated E2E test on Azure DevOps CI. Build ID: ${BUILD_ID}.
 
-      Instructions:
-      1. Read test-plans/RULES.md
-      2. Read test-plans/${PLAN_NAME}.md
-      3. Execute ALL test cases (TC-01 through TC-08) sequentially
-      4. For TC-06: you MUST click Awaiting Review and review all 3 tabs (Overview, ID Verification, KYC Verification) before clicking Finalise
-      5. Generate a report and save it to test-reports/${REPORT_NAME}.md
-      6. At the end, print a single line: RESULT: PASS or RESULT: FAIL
+Instructions:
+1. Read test-plans/RULES.md
+2. Read test-plans/${PLAN_NAME}.md
+3. Execute ALL test cases (TC-01 through TC-08) sequentially
+4. For TC-06: you MUST click Awaiting Review and review all 3 tabs (Overview, ID Verification, KYC Verification) before clicking Finalise
+5. Generate a report and save it to test-reports/${REPORT_NAME}.md
+6. At the end, print a single line: RESULT: PASS or RESULT: FAIL
 
-      Environment: QA — landbankcrm-adminportal-qa.shesha.app
-      Admin account: admin / ${ADMIN_PASSWORD}
-      RM account: fatima.abrahams@landbank.co.za / ${RM_PASSWORD}
+Environment: QA — landbankcrm-adminportal-qa.shesha.app
+Admin account: admin / ${ADMIN_PASSWORD}
+RM account: fatima.abrahams@landbank.co.za / ${RM_PASSWORD}
 
-      Generate a unique lead name using format: AutoCI${BUILD_ID}
+Generate a unique lead name using format: AutoCI${BUILD_ID}
 
-      Do NOT skip any steps. Execute every test case fully.
-      Do NOT add unnecessary commentary — focus on executing the test plan efficiently.
-      " --max-turns 200 2>&1 | tee claude-output.log
+Do NOT skip any steps. Execute every test case fully.
+Be efficient — minimize unnecessary snapshots and commentary.
+" --max-turns 200 --verbose 2>&1 | tee claude-output.log
 
       EXIT_CODE=${PIPESTATUS[0]}
+      echo "Claude exited with code: $EXIT_CODE"
+
       cp claude-output.log $(Build.ArtifactStagingDirectory)/claude-output.log 2>/dev/null || true
 
       if [ -f "test-reports/${REPORT_NAME}.md" ]; then
         echo "Report generated: test-reports/${REPORT_NAME}.md"
       else
         echo "##vso[task.logissue type=warning]Expected report not found: test-reports/${REPORT_NAME}.md"
+        echo "Files in test-reports/:"
+        ls -la test-reports/ 2>/dev/null || echo "No test-reports directory"
       fi
 
       if grep -q "RESULT: FAIL" claude-output.log 2>/dev/null; then
@@ -144,7 +145,7 @@ steps:
       ANTHROPIC_API_KEY: $(ANTHROPIC_API_KEY)
       ADMIN_PASSWORD: $(ADMIN_PASSWORD)
       RM_PASSWORD: $(RM_PASSWORD)
-    timeoutInMinutes: 45
+    timeoutInMinutes: 60
 
   - script: |
       if ls test-reports/*-$(date +%Y-%m-%d).md 1>/dev/null 2>&1; then
