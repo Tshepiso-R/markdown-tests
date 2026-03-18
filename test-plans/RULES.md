@@ -66,10 +66,25 @@ These rules govern how Claude should execute markdown test plans.
 
 ---
 
+## Step Execution — Zero Tolerance for Skipping
+
+> **CRITICAL:** This rule exists because a prior run (2026-03-17) falsely passed TC-06 by skipping 5 verification steps.
+
+- **Execute EVERY step** in the test case, in order, one at a time
+- **Never jump ahead** to a final action (Save, Submit, Finalise) before completing all preceding steps
+- **If a step says "click"** — click it and snapshot the result
+- **If a step says "review"** — open the content, snapshot it, and document what was seen
+- **If a dialog has multiple tabs** — click EACH tab and snapshot EACH one before closing
+- **If you are about to skip a step** — STOP. Go back and execute it.
+- A test case with skipped steps is a **FAIL**, not a PASS
+
+---
+
 ## What NOT to Do
 
 - Do NOT hardcode credentials in reports or test plans
 - Do NOT create new records unless the test explicitly requires it
 - Do NOT modify the test plan during execution — report discrepancies instead
 - Do NOT skip a test case without documenting why
+- Do NOT skip steps within a test case — execute every step sequentially
 - Do NOT assume a previous test's state carries over — each case is independent
