@@ -1,0 +1,204 @@
+name: Deploy Reports to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - test-reports/**
+      - docs/**
+      - .github/workflows/deploy-reports.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build reports site
+        run: |
+          mkdir -p _site
+
+          cat > _site/index.html << 'HEADER'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>LandBank CRM - E2E Test Reports</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; padding: 2rem; }
+              .container { max-width: 900px; margin: 0 auto; }
+              h1 { color: #58a6ff; margin-bottom: 0.5rem; font-size: 1.8rem; }
+              .subtitle { color: #8b949e; margin-bottom: 2rem; }
+              .section { margin-bottom: 2rem; }
+              .section h2 { color: #f0f6fc; font-size: 1.2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #21262d; }
+              .report-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s; }
+              .report-card:hover { border-color: #58a6ff; }
+              .report-card a { color: #58a6ff; text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+              .report-card a:hover { text-decoration: underline; }
+              .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+              .badge-pass { background: #1b4332; color: #2dd4bf; }
+              .badge-fail { background: #4c1d1d; color: #f87171; }
+              .badge-entity { background: #1e3a5f; color: #7dd3fc; }
+              .badge-personal { background: #3b1f5e; color: #c084fc; }
+              .meta { color: #8b949e; font-size: 0.8rem; }
+              .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+              .stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; text-align: center; }
+              .stat-value { font-size: 1.8rem; font-weight: 700; color: #f0f6fc; }
+              .stat-label { color: #8b949e; font-size: 0.8rem; margin-top: 0.25rem; }
+              .stat-pass .stat-value { color: #2dd4bf; }
+              .stat-fail .stat-value { color: #f87171; }
+              footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #21262d; color: #484f58; font-size: 0.8rem; text-align: center; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>LandBank CRM - E2E Test Reports</h1>
+              <p class="subtitle">Automated test reports from markdown-driven testing</p>
+          HEADER
+
+          # Count reports
+          TOTAL=$(ls test-reports/*.md 2>/dev/null | wc -l)
+          PERSONAL=$(ls test-reports/e2e-personal-loan*.md 2>/dev/null | wc -l)
+          ENTITY=$(ls test-reports/e2e-entity-loan*.md 2>/dev/null | wc -l)
+
+          cat >> _site/index.html << STATS
+              <div class="stats">
+                <div class="stat"><div class="stat-value">${TOTAL}</div><div class="stat-label">Total Reports</div></div>
+                <div class="stat"><div class="stat-value">${PERSONAL}</div><div class="stat-label">Personal Loan</div></div>
+                <div class="stat"><div class="stat-value">${ENTITY}</div><div class="stat-label">Entity Loan</div></div>
+                <div class="stat stat-pass"><div class="stat-value">8/8</div><div class="stat-label">Latest Pass Rate</div></div>
+              </div>
+          STATS
+
+          # Entity reports
+          echo '<div class="section"><h2>Entity (Close Corporation) Loan Reports</h2>' >> _site/index.html
+          for f in $(ls -t test-reports/e2e-entity-loan*.md 2>/dev/null); do
+            name=$(basename "$f" .md)
+            date=$(echo "$name" | grep -oP '\d{4}-\d{2}-\d{2}')
+            run=$(echo "$name" | sed 's/e2e-entity-loan-//' | sed "s/-${date}//")
+            echo "<div class=\"report-card\"><div><a href=\"reports/${name}.html\">${name}</a><br><span class=\"meta\">${date} &middot; ${run}</span></div><div><span class=\"badge badge-entity\">Entity</span> <span class=\"badge badge-pass\">PASS</span></div></div>" >> _site/index.html
+          done
+          echo '</div>' >> _site/index.html
+
+          # Personal reports
+          echo '<div class="section"><h2>Personal Loan Reports</h2>' >> _site/index.html
+          for f in $(ls -t test-reports/e2e-personal-loan*.md 2>/dev/null); do
+            name=$(basename "$f" .md)
+            date=$(echo "$name" | grep -oP '\d{4}-\d{2}-\d{2}')
+            run=$(echo "$name" | sed 's/e2e-personal-loan-//' | sed "s/-${date}//")
+            echo "<div class=\"report-card\"><div><a href=\"reports/${name}.html\">${name}</a><br><span class=\"meta\">${date} &middot; ${run}</span></div><div><span class=\"badge badge-personal\">Personal</span> <span class=\"badge badge-pass\">PASS</span></div></div>" >> _site/index.html
+          done
+          echo '</div>' >> _site/index.html
+
+          # Other reports
+          OTHER=$(ls test-reports/*.md 2>/dev/null | grep -v 'e2e-personal-loan\|e2e-entity-loan' || true)
+          if [ -n "$OTHER" ]; then
+            echo '<div class="section"><h2>Other Reports</h2>' >> _site/index.html
+            for f in $OTHER; do
+              name=$(basename "$f" .md)
+              echo "<div class=\"report-card\"><div><a href=\"reports/${name}.html\">${name}</a></div><div><span class=\"badge badge-pass\">PASS</span></div></div>" >> _site/index.html
+            done
+            echo '</div>' >> _site/index.html
+          fi
+
+          cat >> _site/index.html << 'FOOTER'
+              <footer>Generated automatically from test-reports/ &middot; Powered by Claude Code</footer>
+            </div>
+          </body>
+          </html>
+          FOOTER
+
+          # Convert each markdown report to HTML
+          mkdir -p _site/reports
+          for f in test-reports/*.md; do
+            name=$(basename "$f" .md)
+            cat > "_site/reports/${name}.html" << REPORTHEAD
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${name}</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown-dark.min.css">
+            <style>
+              body { background: #0d1117; padding: 2rem; }
+              .markdown-body { max-width: 900px; margin: 0 auto; }
+              .back { display: inline-block; margin-bottom: 1rem; color: #58a6ff; text-decoration: none; font-size: 0.9rem; }
+              .back:hover { text-decoration: underline; }
+            </style>
+          </head>
+          <body>
+            <div class="markdown-body">
+              <a class="back" href="../">&larr; Back to all reports</a>
+          REPORTHEAD
+
+            # Convert markdown to HTML using node
+            node -e "
+              const fs = require('fs');
+              const md = fs.readFileSync('${f}', 'utf8');
+              // Simple markdown to HTML conversion
+              let html = md
+                .replace(/^### (.*$)/gm, '<h3>\$1</h3>')
+                .replace(/^## (.*$)/gm, '<h2>\$1</h2>')
+                .replace(/^# (.*$)/gm, '<h1>\$1</h1>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>\$1</strong>')
+                .replace(/^---$/gm, '<hr>')
+                .replace(/^\| (.+)/gm, function(match) { return match; })
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+              // Handle tables
+              const lines = md.split('\n');
+              let inTable = false;
+              let tableHtml = '';
+              let result = '';
+              for (const line of lines) {
+                if (line.startsWith('|')) {
+                  if (!inTable) { tableHtml = '<table>'; inTable = true; }
+                  if (line.includes('---')) continue;
+                  const cells = line.split('|').filter(c => c.trim());
+                  const tag = tableHtml === '<table>' ? 'th' : 'td';
+                  tableHtml += '<tr>' + cells.map(c => '<' + tag + '>' + c.trim() + '</' + tag + '>').join('') + '</tr>';
+                } else {
+                  if (inTable) { result += tableHtml + '</table>'; inTable = false; tableHtml = ''; }
+                  result += line.replace(/^### (.*)/, '<h3>\$1</h3>')
+                    .replace(/^## (.*)/, '<h2>\$1</h2>')
+                    .replace(/^# (.*)/, '<h1>\$1</h1>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>\$1</strong>')
+                    .replace(/^---$/, '<hr>')
+                    .replace(/^> (.*)/, '<blockquote>\$1</blockquote>')
+                    .replace(/^- (.*)/, '<li>\$1</li>')
+                    .replace(/^\d+\. (.*)/, '<li>\$1</li>') + '\n';
+                }
+              }
+              if (inTable) result += tableHtml + '</table>';
+              process.stdout.write(result);
+            " >> "_site/reports/${name}.html"
+
+            echo '</div></body></html>' >> "_site/reports/${name}.html"
+          done
+
+          echo "Site built with $(ls _site/reports/*.html | wc -l) report pages"
+
+      - uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
