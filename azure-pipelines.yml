@@ -60,27 +60,8 @@ steps:
 
   - script: |
       mkdir -p ~/.claude
-      cat > ~/.claude/settings.json << 'SETTINGS'
-{
-  "permissions": {
-    "allow": [
-      "mcp__playwright__*",
-      "Read",
-      "Write",
-      "Glob",
-      "Grep",
-      "Bash(*)"
-    ],
-    "deny": []
-  },
-  "mcpServers": {
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp", "--headless"]
-    }
-  }
-}
-SETTINGS
+      echo '{"permissions":{"allow":["mcp__playwright__*","Read","Write","Glob","Grep","Bash(*)"],"deny":[]},"mcpServers":{"playwright":{"command":"npx","args":["-y","@playwright/mcp","--headless"]}}}' > ~/.claude/settings.json
+      echo "Settings written:"
       cat ~/.claude/settings.json
     displayName: "Configure Claude Code + MCP Playwright"
 
