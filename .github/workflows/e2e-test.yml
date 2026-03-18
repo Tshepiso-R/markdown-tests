@@ -1,4 +1,4 @@
-name: E2E Personal Loan Test
+name: E2E Loan Application Test
 
 on:
   workflow_dispatch:
@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - e2e-personal-loan-application
+          - e2e-entity-loan-application
   schedule:
     - cron: "0 3 * * 1-5"
 
