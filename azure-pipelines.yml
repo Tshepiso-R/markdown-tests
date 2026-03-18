@@ -1,13 +1,5 @@
 trigger: none
 
-schedules:
-  - cron: "0 3 * * 1-5"
-    displayName: "Weekday 3am run"
-    branches:
-      include:
-        - main
-    always: true
-
 parameters:
   - name: testPlan
     displayName: "Test plan to execute"
