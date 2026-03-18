@@ -1,0 +1,179 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - test-plans/**
+
+schedules:
+  - cron: "0 6 * * 1-5"
+    displayName: "Weekday morning run"
+    branches:
+      include:
+        - main
+    always: true
+
+parameters:
+  - name: testPlan
+    displayName: "Test plan to execute"
+    type: string
+    default: "e2e-personal-loan-application"
+    values:
+      - e2e-personal-loan-application
+
+  - name: environment
+    displayName: "Target environment"
+    type: string
+    default: "QA"
+    values:
+      - QA
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  - name: NODE_VERSION
+    value: "20"
+  - name: REPORT_DATE
+    value: $[format('{0:yyyy}-{0:MM}-{0:dd}', pipeline.startDate)]
+
+steps:
+  - task: NodeTool@0
+    displayName: "Install Node.js $(NODE_VERSION)"
+    inputs:
+      versionSpec: "$(NODE_VERSION)"
+
+  - script: |
+      npm install -g @anthropic-ai/claude-code
+    displayName: "Install Claude Code CLI"
+
+  - script: |
+      npx @anthropic-ai/claude-code --version
+    displayName: "Verify Claude Code installed"
+
+  - script: |
+      npx playwright install chromium --with-deps
+    displayName: "Install Playwright + Chromium"
+
+  - script: |
+      npm install -g @anthropic-ai/mcp-playwright
+    displayName: "Install MCP Playwright server"
+
+  - script: |
+      mkdir -p ~/.claude
+      cat > ~/.claude/settings.json << 'SETTINGS'
+      {
+        "permissions": {
+          "allow": [
+            "mcp__playwright__browser_navigate",
+            "mcp__playwright__browser_snapshot",
+            "mcp__playwright__browser_click",
+            "mcp__playwright__browser_fill_form",
+            "mcp__playwright__browser_type",
+            "mcp__playwright__browser_wait_for",
+            "mcp__playwright__browser_take_screenshot",
+            "mcp__playwright__browser_select_option",
+            "mcp__playwright__browser_press_key",
+            "mcp__playwright__browser_evaluate",
+            "mcp__playwright__browser_hover",
+            "mcp__playwright__browser_close",
+            "mcp__playwright__browser_console_messages",
+            "mcp__playwright__browser_tabs",
+            "Read",
+            "Write",
+            "Glob",
+            "Grep",
+            "Bash(git *)",
+            "Bash(ls *)",
+            "Bash(echo *)"
+          ],
+          "deny": []
+        },
+        "mcpServers": {
+          "playwright": {
+            "command": "npx",
+            "args": ["-y", "@anthropic-ai/mcp-playwright", "--headless"]
+          }
+        }
+      }
+      SETTINGS
+    displayName: "Configure Claude Code + MCP Playwright"
+
+  - script: |
+      PLAN_NAME="${{ parameters.testPlan }}"
+      REPORT_NAME="${PLAN_NAME}-$(date +%Y-%m-%d)"
+
+      claude -p "
+      You are running an automated E2E test on Azure DevOps CI.
+
+      Instructions:
+      1. Read test-plans/RULES.md
+      2. Read test-plans/${PLAN_NAME}.md
+      3. Execute ALL test cases (TC-01 through TC-08) sequentially
+      4. For TC-06: you MUST click Awaiting Review and review all 3 tabs (Overview, ID Verification, KYC Verification) before clicking Finalise
+      5. Generate a report and save it to test-reports/${REPORT_NAME}.md
+      6. At the end, print PASS if all tests passed, or FAIL if any test failed
+
+      Environment: QA — landbankcrm-adminportal-qa.shesha.app
+      Admin account: admin / \$(ADMIN_PASSWORD)
+      RM account: fatima.abrahams@landbank.co.za / \$(RM_PASSWORD)
+
+      Generate a unique lead name using format: AutoCI\$(date +%s | tail -c 6)
+
+      Do NOT skip any steps. Execute every test case fully.
+      " --max-turns 200 --output-format text 2>&1 | tee $(Build.ArtifactStagingDirectory)/claude-output.log
+
+      EXIT_CODE=${PIPESTATUS[0]}
+
+      if grep -q "FAIL" $(Build.ArtifactStagingDirectory)/claude-output.log; then
+        echo "##vso[task.logissue type=error]One or more test cases failed"
+        echo "##vso[task.complete result=Failed;]Test run failed"
+      fi
+
+      exit $EXIT_CODE
+    displayName: "Run E2E test plan via Claude Code"
+    env:
+      ANTHROPIC_API_KEY: $(ANTHROPIC_API_KEY)
+      ADMIN_PASSWORD: $(ADMIN_PASSWORD)
+      RM_PASSWORD: $(RM_PASSWORD)
+    timeoutInMinutes: 30
+
+  - script: |
+      if ls test-reports/*-$(date +%Y-%m-%d).md 1>/dev/null 2>&1; then
+        echo "Test report(s) generated:"
+        ls -la test-reports/*-$(date +%Y-%m-%d).md
+      else
+        echo "##vso[task.logissue type=warning]No test report was generated"
+      fi
+    displayName: "Verify report generated"
+    condition: always()
+
+  - task: CopyFiles@2
+    displayName: "Stage test reports"
+    condition: always()
+    inputs:
+      SourceFolder: "test-reports"
+      Contents: "**/*.md"
+      TargetFolder: "$(Build.ArtifactStagingDirectory)/test-reports"
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish test reports"
+    condition: always()
+    inputs:
+      PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+      ArtifactName: "test-results"
+      publishLocation: "Container"
+
+  - script: |
+      if ls test-reports/*-$(date +%Y-%m-%d).md 1>/dev/null 2>&1; then
+        git config user.email "pipeline@dev.azure.com"
+        git config user.name "Azure DevOps Pipeline"
+        git add test-reports/*.md
+        git commit -m "CI: Add test report from pipeline run $(Build.BuildNumber)" || echo "No changes to commit"
+        git push origin HEAD:main || echo "##vso[task.logissue type=warning]Could not push report to repo"
+      fi
+    displayName: "Commit report to repo"
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
