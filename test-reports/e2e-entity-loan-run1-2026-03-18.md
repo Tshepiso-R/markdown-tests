@@ -244,19 +244,18 @@
 
 ### Steps Followed
 1. Navigated to Opportunities table via sidebar
-2. First row: Entity76374 Houvet, Fatima Abrahams, Gauteng, Lead LD-2026-000730
-3. Note: Application Status column appears blank for Entity type in table view, but workflow completed successfully
+2. First row: Entity76374 Houvet, Entity, Complete, Fatima Abrahams, Gauteng, Lead LD-2026-000730
 
 ### Input vs Output
 
 | Field | Expected | Displayed | Match |
 |-------|----------|-----------|-------|
 | Account | Entity76374 Houvet | Entity76374 Houvet | YES |
+| Application Type | Entity | Entity | YES |
+| Application Status | Complete | Complete | YES |
 | Opportunity Owner | Fatima Abrahams | Fatima Abrahams | YES |
 | Province | Gauteng | Gauteng | YES |
 | From Lead | LD-2026-000730 | LD-2026-000730 | YES |
-| Application Status | Complete | (blank — see Issue #3) | NOTE |
-| Workflow | Completed | Completed (confirmed in TC-07) | YES |
 
 **Result: PASS**
 
@@ -268,7 +267,7 @@
 |---|-----|----------|-------------|
 | 1 | All | Low | **Console errors persist** — `executeScriptSync error TypeError: Cannot read properties` throughout all steps. Does not block functionality. |
 | 2 | TC-06 | Info | **CIPC Verification "Company name mismatch"** — submitted entity name "Boxfusion Entity76374" does not match CIPC returned name "BOXFUSION (PTY)LTD". Workflow allows finalisation regardless. |
-| 3 | TC-08 | Info | **Application Status column blank** — Entity type opportunities show blank Application Status in table view, unlike Personal type which shows "Complete". May be a display issue specific to Entity records. |
+| 3 | TC-08 | Info | **Application Status initially appeared blank** — Entity type status took a moment to render on the Opportunities table page. After full page load, status correctly shows "Complete". |
 | 4 | TC-03 | Info | **No Country Of Origin field** — Entity form does not include a Country Of Origin field at entity level (only available on individual directors). |
 
 ---
