@@ -1,3 +1,6 @@
 .playwright-mcp/
 *.png
 *.jpeg
+# Allow screenshots in test reports
+!test-reports/screenshots/**/*.png
+!test-reports/screenshots/**/*.jpeg

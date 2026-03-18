@@ -57,12 +57,45 @@ These rules govern how Claude should execute markdown test plans.
 
 ---
 
+## During Each Test Case — Capture Evidence
+
+For each test case section in the report, include:
+
+1. **Page URL** — Record the browser URL at the start of each test case
+2. **Snapshots** — Take a screenshot at key moments:
+   - After navigating to the target page
+   - After filling forms (before save/submit)
+   - After save/submit (showing success message or error)
+   - Any dialog content (verification tabs, pre-screening, etc.)
+3. **Save screenshots** to the report with descriptive names: `tc01-lead-created.png`, `tc06-id-verification.png`, etc.
+4. **Embed in report** using: `![Description](../screenshots/filename.png)`
+
+### Report Section Format
+
+Each TC section must include:
+```
+## TC-XX: Description
+**URL:** https://landbankcrm-adminportal-qa.shesha.app/dynamic/...
+### Steps Followed
+...
+### Snapshots
+| Screenshot | Description |
+|-----------|-------------|
+| tc01-lead-form.png | Lead creation form filled |
+| tc01-lead-saved.png | Lead saved, visible in table |
+### Input vs Output
+...
+```
+
+---
+
 ## After Testing
 
 1. Fill in the **Report Structure** section from the test plan
-2. Save the report to `test-reports/[module]-YYYY-MM-DD.md`
-3. Summarize: total pass/fail/skip, top issues, and recommendations
-4. If any test plan steps are outdated (UI changed), note what needs updating
+2. Save the report to `test-reports/[module]-YYYY-MM-DDTHH-MM.md` (include time)
+3. Save screenshots to `test-reports/screenshots/[report-name]/` folder
+4. Summarize: total pass/fail/skip, top issues, and recommendations
+5. If any test plan steps are outdated (UI changed), note what needs updating
 
 ---
 
