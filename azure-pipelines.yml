@@ -35,8 +35,6 @@ pool:
 variables:
   - name: NODE_VERSION
     value: "20"
-  - name: REPORT_DATE
-    value: $[format('{0:yyyy}-{0:MM}-{0:dd}', pipeline.startDate)]
 
 steps:
   - task: NodeTool@0
