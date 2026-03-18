@@ -12,7 +12,7 @@ on:
           - e2e-entity-loan-application
           - e2e-negative-edge-cases
   schedule:
-    - cron: "0 3 * * 1-5"
+    - cron: "0 0 * * *"
 
 jobs:
   e2e-test:
