@@ -67,7 +67,7 @@ jobs:
             - Entity reg: 2012/225386/07
 
             Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
-          claude_args: "--max-turns 400 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
+          claude_args: "--max-turns ${{ inputs.test_plan == 'e2e-negative-edge-cases' && '600' || '400' }} --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
         env:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
