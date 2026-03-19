@@ -4,6 +4,52 @@ Copy this structure to set up automated E2E testing on any web application.
 
 ---
 
+## 0. Starter Prompt
+
+> Paste this into Claude Code to bootstrap a new project. Replace the placeholders with your app details.
+
+```
+I want to set up markdown-driven E2E testing for my web application.
+
+App: [YOUR APP NAME]
+URL: [YOUR APP URL]
+Environment: [QA/Staging/Dev]
+
+Accounts:
+- Admin: [username] / [password]
+- User: [username] / [password]
+
+The main user journey I want to test is:
+[Describe your end-to-end flow, e.g.:
+1. Login as admin
+2. Create a new [record type]
+3. Fill in mandatory fields: [list fields]
+4. Submit and verify it appears in the list
+5. Open the record and verify all fields saved correctly
+6. Perform [workflow action]
+7. Verify status changes to [expected status]
+]
+
+Test data to reuse (don't create new records with these IDs — they may trigger paid API calls):
+- [ID/key 1] — [description]
+- [ID/key 2] — [description]
+
+Please:
+1. Create the project structure (CLAUDE.md, test-plans/RULES.md, test-plans/TEMPLATE.md)
+2. Write the first test plan based on my user journey above
+3. Set up GitHub Actions workflow for CI (using Sonnet model, 800 max turns)
+4. Set up GitHub Pages dashboard for viewing reports
+5. Run the first test locally and generate a report
+
+Use the markdown-driven testing approach:
+- Test plans are markdown files in test-plans/
+- Claude reads the plan and drives the browser via MCP Playwright
+- Reports are saved to test-reports/ with pass/fail assertions
+- No traditional test scripts — markdown is the source of truth
+```
+
+---
+
 ## 1. Project Structure
 
 ```
