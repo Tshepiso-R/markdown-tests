@@ -85,11 +85,10 @@ Validation and error handling scenarios.
 ## Running Tests
 
 ### Prerequisites
-- Admin account: `admin` / `123qwe`
-- RM account: `fatima.abrahams@landbank.co.za` / `123qwe`
+- Admin and RM account credentials (stored in test plans — not in this README)
 - Environment: `landbankcrm-adminportal-qa.shesha.app`
 
-### To run a test plan
+### Running locally
 
 Ask Claude:
 ```
@@ -101,6 +100,16 @@ Claude will:
 2. Read the target test plan
 3. Open the browser and execute each test case
 4. Generate a report in `test-reports/[module]/`
+
+### Running via CI
+
+Tests run automatically via GitHub Actions (`.github/workflows/e2e-test.yml`):
+
+- **Scheduled:** Runs daily at midnight (UTC) — executes all test plans
+- **Manual dispatch:** Trigger from Actions tab, select which test plan to run
+- **On demand:** Choose from `e2e-personal-loan-application`, `e2e-entity-loan-application`, or `e2e-negative-edge-cases`
+
+CI runs use Claude Code CLI (`@anthropic-ai/claude-code`) with Playwright MCP for browser automation. Reports and screenshots are committed back to the repo automatically after each run.
 
 ### Test Data
 
