@@ -159,3 +159,29 @@ test-reports/screenshots/[module]/tc01-description.png
 ```
 
 Each report includes: summary table, per-TC steps followed, assertions with pass/fail checkboxes, URLs, and flagged issues.
+
+---
+
+## Pros and Cons
+
+### Pros
+
+- **No code to maintain** — test plans are plain markdown. Anyone can read, write, or review them without knowing a programming language or test framework.
+- **Self-documenting** — the test plan IS the documentation. No gap between what's documented and what's tested.
+- **Detailed reports** — every run produces a timestamped report with exact steps, assertions, screenshots, and URLs. Full audit trail.
+- **Adapts to UI changes** — Claude reads the actual page state via snapshots before every action. If a button moves or a label changes, it adjusts. No brittle CSS selectors to fix.
+- **Catches real issues** — tests run through the real browser like a user would. Finds bugs that unit tests and API tests miss (e.g. the "Awaiting Review" button label not updating).
+- **Fast to create new tests** — copy TEMPLATE.md, fill in the steps and expected results. No page objects, no fixtures, no boilerplate.
+- **End-to-end coverage including external services** — consent flow, email OTP, third-party verification APIs are all tested in the real flow.
+- **Human-readable failures** — when something fails, the report says exactly what happened in plain English with a screenshot. No stack traces to decode.
+
+### Cons
+
+- **Slow execution** — each run takes 15-30 minutes because Claude navigates the browser step by step. Traditional Playwright scripts would be faster.
+- **LLM cost per run** — every execution consumes API tokens. Running this on every commit is expensive compared to traditional test suites.
+- **Non-deterministic** — Claude may interact with the UI slightly differently between runs (e.g. different click timing, different dropdown selection approach). This can cause flaky results.
+- **No parallel execution** — runs are sequential. Can't split test cases across multiple browsers or workers.
+- **Limited to what the browser shows** — can't assert database state, API response payloads, or background jobs directly. Only verifies what's visible in the UI.
+- **Context window pressure** — long test runs accumulate large snapshots. Late test cases may lose context from early ones as the conversation compresses.
+- **Dependent on LLM judgment** — if Claude misinterprets a snapshot or makes a wrong assumption, it may pass a test that should fail (or vice versa). Requires human review of reports.
+- **No CI caching or incremental runs** — every run starts from scratch. Can't skip unchanged test cases like traditional test frameworks.
