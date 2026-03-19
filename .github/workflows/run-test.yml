@@ -1,0 +1,122 @@
+name: Run E2E Test
+
+on:
+  workflow_call:
+    inputs:
+      test_plan:
+        required: true
+        type: string
+      trigger_type:
+        required: true
+        type: string
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+
+      - name: Set report name
+        id: report
+        run: |
+          TRIGGER="${{ inputs.trigger_type }}"
+          if [ "$TRIGGER" = "schedule" ]; then
+            PREFIX="scheduled"
+          else
+            PREFIX="manual"
+          fi
+          PLAN="${{ inputs.test_plan }}"
+          DATETIME=$(date +%Y-%m-%dT%H-%M)
+          NAME="${PLAN}-${PREFIX}-${DATETIME}"
+          echo "name=${NAME}" >> $GITHUB_OUTPUT
+          echo "prefix=${PREFIX}" >> $GITHUB_OUTPUT
+          echo "Report: ${NAME}"
+
+      - name: Run E2E tests via Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You are running an automated E2E test on GitHub Actions CI. Run ID: ${{ github.run_id }}. Trigger: ${{ steps.report.outputs.prefix }}. BE EFFICIENT — minimize snapshots, batch form fills.
+
+            Instructions:
+            1. Read test-plans/RULES.md (ID reuse rule is mandatory)
+            2. Read test-plans/${{ inputs.test_plan }}.md
+            3. Execute ALL test cases sequentially
+            4. For TC-06: click Awaiting Review, review all verification tabs, then Finalise
+            5. Generate report to test-reports/${{ steps.report.outputs.name }}.md
+            6. Each TC section needs: URL and pass/fail result. No screenshots in CI.
+            7. Add UX Observations section at the end if any issues found
+            8. Print RESULT: PASS or RESULT: FAIL
+
+            EFFICIENCY RULES FOR CI:
+            - Do NOT take screenshots or save images
+            - Do NOT snapshot after every field — only snapshot when needed to find elements
+            - Use fill_form to batch multiple fields at once
+            - Only snapshot after save/submit to verify success
+
+            Environment: QA at landbankcrm-adminportal-qa.shesha.app
+            Admin: admin / ${{ secrets.ADMIN_PASSWORD }}
+            RM: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
+
+            MANDATORY IDs (reuse — new ones cost money):
+            - 7708206169188 (Ian Houvet)
+            - 7304190225085 (Chamaine Houvet)
+            - 6311115651080 (Xolile Ndlangana)
+            - Entity reg: 2012/225386/07
+
+            Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
+          claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
+
+      - name: Post report to job summary
+        if: always()
+        run: |
+          REPORT="test-reports/${{ steps.report.outputs.name }}.md"
+          if [ -f "$REPORT" ]; then
+            echo "## Test Report: ${{ steps.report.outputs.name }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Test Plan:** ${{ inputs.test_plan }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Trigger:** ${{ steps.report.outputs.prefix }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Run ID:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat "$REPORT" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## No report generated" >> $GITHUB_STEP_SUMMARY
+            echo "The test run did not produce a report file." >> $GITHUB_STEP_SUMMARY
+            echo "Expected: $REPORT" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Files in test-reports/:" >> $GITHUB_STEP_SUMMARY
+            ls -la test-reports/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || echo "No test-reports directory" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-${{ inputs.test_plan }}
+          path: test-reports/
+
+      - name: Commit report
+        if: success() && github.ref == 'refs/heads/main'
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git pull --rebase origin main || true
+          git add test-reports/*.md 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "CI: ${{ steps.report.outputs.prefix }} run — ${{ inputs.test_plan }} (#${{ github.run_number }})"
+          git push || echo "Could not push report"

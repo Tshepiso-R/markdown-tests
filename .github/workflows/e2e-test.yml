@@ -15,75 +15,26 @@ on:
     - cron: "0 0 * * *"
 
 jobs:
-  e2e-test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    permissions:
-      contents: write
-      id-token: write
+  personal-loan:
+    if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-personal-loan-application'
+    uses: ./.github/workflows/run-test.yml
+    with:
+      test_plan: e2e-personal-loan-application
+      trigger_type: ${{ github.event_name }}
+    secrets: inherit
 
-    steps:
-      - uses: actions/checkout@v4
+  entity-loan:
+    if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-entity-loan-application'
+    uses: ./.github/workflows/run-test.yml
+    with:
+      test_plan: e2e-entity-loan-application
+      trigger_type: ${{ github.event_name }}
+    secrets: inherit
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install Playwright
-        run: npx playwright install chromium --with-deps
-
-      - name: Run E2E tests via Claude Code
-        uses: anthropics/claude-code-action@v1
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt: |
-            You are running an automated E2E test on GitHub Actions CI. Run ID: ${{ github.run_id }}. BE EFFICIENT — minimize snapshots, do NOT take screenshots, batch form fills where possible.
-
-            Instructions:
-            1. Read test-plans/RULES.md (ID reuse rule is mandatory)
-            2. Read test-plans/${{ inputs.test_plan || 'e2e-personal-loan-application' }}.md
-            3. Execute ALL test cases sequentially
-            4. For TC-06: click Awaiting Review, review all verification tabs, then Finalise
-            5. Generate report to test-reports/${{ inputs.test_plan || 'e2e-personal-loan-application' }}-ci-${{ github.run_id }}-$(date +%Y-%m-%dT%H-%M).md
-            6. Each TC section needs: URL and pass/fail result. No screenshots in CI.
-            7. Add UX Observations section at the end if any issues found
-            8. Print RESULT: PASS or RESULT: FAIL
-
-            EFFICIENCY RULES FOR CI:
-            - Do NOT take screenshots or save images
-            - Do NOT snapshot after every field — only snapshot when needed to find elements
-            - Use fill_form to batch multiple fields at once
-            - After selecting a dropdown, move to the next field immediately
-            - Only snapshot after save/submit to verify success
-
-            Environment: QA at landbankcrm-adminportal-qa.shesha.app
-            Admin: admin / ${{ secrets.ADMIN_PASSWORD }}
-            RM: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
-
-            MANDATORY IDs (reuse — new ones cost money):
-            - 7708206169188 (Ian Houvet)
-            - 7304190225085 (Chamaine Houvet)
-            - 6311115651080 (Xolile Ndlangana)
-            - Entity reg: 2012/225386/07
-
-            Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
-          claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
-        env:
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
-
-      - name: Upload test reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-reports
-          path: test-reports/
-
-      - name: Commit report
-        if: success() && github.ref == 'refs/heads/main'
-        run: |
-          git config user.email "github-actions@github.com"
-          git config user.name "GitHub Actions"
-          git add test-reports/*.md 2>/dev/null || true
-          git diff --cached --quiet || git commit -m "CI: Add test report from run #${{ github.run_number }}"
-          git push || echo "Could not push report"
+  negative-edge:
+    if: inputs.test_plan == 'e2e-negative-edge-cases'
+    uses: ./.github/workflows/run-test.yml
+    with:
+      test_plan: e2e-negative-edge-cases
+      trigger_type: ${{ github.event_name }}
+    secrets: inherit
