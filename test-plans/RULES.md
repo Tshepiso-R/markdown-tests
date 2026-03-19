@@ -45,6 +45,29 @@ These rules govern how Claude should execute markdown test plans.
 - If an assertion fails, capture a screenshot and continue to the next test case
 - Never skip assertions — every one must be evaluated
 
+### Detail View Assertions — Verify ALL Tabs on Landing
+
+> Every time you land on an opportunity detail view (after save, after navigation, after status change), assert that the data is correct and nothing is missing across ALL tabs.
+
+**On first landing (after pre-screening or navigation):**
+1. **Header** — assert: Applicant name, Status badge (Draft/Consent Pending/etc.), Application Type (Personal/Entity), Amount
+2. **Client Info tab** — snapshot and assert every field has the expected value:
+   - Personal: Client ID, Title, Name, Surname, Email, Mobile, Communication, Countries, Classification, Address, Province, Region, Provincial Office, Marital Status
+   - Entity: Entity Name, Reg Number, Years, Contact Person fields, Countries, Org Type, Classification, BEEE, Address, Province, Region, Provincial Office, Resolution checkbox
+3. **Loan Info tab** — click the tab, snapshot, and assert:
+   - Product selected (name visible)
+   - Business Summary populated
+   - Requested Amount matches
+   - Existing Relationship, Sources Of Income set
+   - Loan Purpose table has the correct rows (Purpose + Amount)
+4. **Farms tab** — click the tab and snapshot (even if empty — confirm it loads)
+
+**After every save:**
+- Snapshot the read-only view and confirm the saved values match what was entered
+- Check ALL tabs, not just the one you edited — a save could silently reset another tab
+
+**In the report**, document what you see on each tab. If a field is blank that should have a value, flag it as `[!]`.
+
 ---
 
 ## On Failure
