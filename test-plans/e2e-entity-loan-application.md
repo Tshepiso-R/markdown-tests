@@ -34,12 +34,16 @@ PHASE 3: Opportunity Setup (RM — Fatima)
        └─ Opportunity status: Draft
 
 PHASE 4: Initiate Loan Application (RM — Fatima)
-  └─ Uncheck Auto Verify checkbox
   └─ Click "Initiate Loan Application"
-       └─ Opportunity status: Consent Pending
-       └─ Consent email sent to contact person
+       └─ Opportunity status: Resolution Pending
+       └─ Resolution emails sent to ALL directors
 
-PHASE 4.5: Upload Entity Consent (Contact Person, via email)
+PHASE 4a: Sign Company Resolution (ALL Directors, via email)
+  └─ For EACH director: retrieve resolution email → open URL → OTP → sign
+  └─ ALL directors must sign before status progresses
+       └─ Opportunity status: Consent Pending (after all sign)
+
+PHASE 4b: Upload Entity Consent (Contact Person, via email)
   └─ Retrieve consent email from testmail.app API
   └─ Open consent URL from email
   └─ Request OTP → Retrieve OTP email → Submit OTP
@@ -169,9 +173,10 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   12. Set Client Classification: Development
   13. Set Registered Address via Google Places
   14. Set Provincial Office
-  15. Check "Does the client have a resolution?" checkbox
+  15. **Leave** "Does the client have a resolution?" **unchecked** (checking requires uploading a signed resolution document — the resolution is handled via email in Phase 4a instead)
   16. Fill Contact Person fields (Title, Name, Surname, Email, Mobile)
-  17. Click "Save"
+  17. Switch to **Loan Info** tab → fill Product, Amount, Purpose (see TC-04 input data)
+  18. Click **"Save"** once (single save for all tabs)
 - **Input data:**
   | Field | Value | Type |
   |-------|-------|------|
@@ -188,7 +193,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | Province | Gauteng | Pre-filled or Dropdown |
   | Region | Central Region | Auto-mapped |
   | Provincial Office | Provincial Office | Dropdown |
-  | Does the client have a resolution? | Checked | Checkbox |
+  | Does the client have a resolution? | **Unchecked** (requires document upload — resolution handled via email flow in TC-05r) | Checkbox |
   | Contact Person Title | Mr | Dropdown |
   | Contact Person Name | Ian | Text |
   | Contact Person Surname | Houvet | Text |
@@ -201,7 +206,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   - [x] Google Places auto-fills registered address
   - [x] Contact Person fields saved correctly
   - [x] Application Type shows "Entity" (not "Personal")
-  - [x] "Does the client have a resolution?" checkbox is checked
+  - [x] "Does the client have a resolution?" checkbox is unchecked (resolution handled via email flow)
 
 ### TC-03a: Add Directors
 - **Type:** Happy path
@@ -235,7 +240,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | Chamaine | Text |
   | Last Name | Houvet | Text |
   | ID Number | 7304190225085 | Text |
-  | Email | chamaine@boxfusion.io | Text |
+  | Email | 5s9ku.dir2-[timestamp]@inbox.testmail.app | Text |
   | Mobile | 0712345679 | Text |
   | Citizenship | South Africa | Searchable dropdown |
   | Country Of Residence | South Africa | Searchable dropdown |
@@ -247,12 +252,14 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | Xolile | Text |
   | Last Name | Ndlangana | Text |
   | ID Number | 6311115651080 | Text |
-  | Email | xolile@boxfusion.io | Text |
+  | Email | 5s9ku.dir3-[timestamp]@inbox.testmail.app | Text |
   | Mobile | 0712345680 | Text |
   | Citizenship | South Africa | Searchable dropdown |
   | Country Of Residence | South Africa | Searchable dropdown |
   | Country Of Origin | South Africa | Searchable dropdown |
   | Marital Status | Single | Dropdown |
+
+> **IMPORTANT:** ALL director emails MUST use testmail.app addresses (unique tag per director per run). The resolution flow sends emails to every director, and all must sign. Using non-testmail addresses (e.g. @boxfusion.io) will block the resolution step since those inboxes can't be queried programmatically.
 - **Expected result:** "Data saved successfully!" — 3 directors listed
 - **Assertions:**
   - [x] Director 1 (Ian Houvet) saved with Married status and spouse details
@@ -353,17 +360,15 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
 ### TC-05: Initiate Loan Application
 - **Type:** Happy path
 - **Login:** RM (Fatima)
-- **Prereqs:** Entity Info filled, Directors added, Signatories added, Product selected, Requested Amount > 0, Auto Verify unchecked
+- **Prereqs:** Entity Info filled, Directors added, Signatories added, Product selected, Requested Amount > 0
 - **Steps:**
-  1. On opportunity page, click "Edit"
-  2. Uncheck the "Auto Verify" checkbox
-  3. Click "Save"
-  4. Click "Initiate Loan Application"
-- **Expected result:** Workflow starts, status changes to Consent Pending, consent email sent to contact person
+  1. On opportunity page, click "Initiate Loan Application"
+- **Expected result:** Workflow starts, status changes to Resolution Pending, resolution emails sent to ALL directors
 - **Assertions:**
-  - [ ] "Loan Application submitted successfully" message
-  - [ ] Opportunity status → "Consent Pending"
+  - [ ] Toast: "Loan Application submitted successfully"
+  - [ ] Opportunity status → **"Resolution Pending"** (Entity flow — NOT "Consent Pending")
   - [ ] "Initiate Loan Application" button disappears
+  - [ ] Resolution emails sent to all 3 director email addresses
 
 ### TC-05a: Initiate without Requested Amount (negative)
 - **Type:** Negative
@@ -383,11 +388,51 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   - [x] Error: "Cannot initiate workflow: at least one product is required."
   - [x] Status remains "Draft"
 
+### TC-05r: Sign Company Resolution (ALL Directors)
+- **Type:** Happy path
+- **Login:** Not needed (resolution page is public link from email)
+- **Steps — repeat for EACH director (Ian, Chamaine, Xolile):**
+  1. Call testmail.app API with the director's tag to retrieve resolution email
+     - Subject: "Action Required: Company Resolution Needed for Loan Application"
+  2. Extract resolution URL from email body (href matching `entity-application-resolution-approval`)
+  3. Navigate to resolution URL in browser
+  4. Verify resolution page loads:
+     - Company Name, Registration Number
+     - Directors table (all 3 listed)
+     - Nominated Signatories table
+  5. Click "Request OTP"
+  6. Verify toast: "The one-time-password (OTP) has been sent"
+  7. Call testmail.app API with director's tag + timestamp_from to get OTP email
+  8. Extract OTP: `Your One-Time-Pin is (\d+)`
+  9. Fill OTP into input field
+  10. Click "Submit OTP and Sign Resolution"
+  11. Click "Submit" in confirmation dialog
+  12. Verify success: "Resolution signed successfully!"
+  13. After ALL 3 directors have signed:
+     - Navigate back to opportunity page
+     - Verify status changed to **"Consent Pending"**
+- **Director email tags (for testmail.app API calls):**
+  | Director | Testmail tag | API tag parameter |
+  |----------|-------------|-------------------|
+  | Ian Houvet | consent-[timestamp] | consent-[timestamp] |
+  | Chamaine Houvet | dir2-[timestamp] | dir2-[timestamp] |
+  | Xolile Ndlangana | dir3-[timestamp] | dir3-[timestamp] |
+- **Expected result:** All 3 resolutions signed, status progresses to "Consent Pending"
+- **Assertions:**
+  - [ ] Resolution email received for each director
+  - [ ] Resolution URL extracted from each email
+  - [ ] Resolution page shows correct company details and all directors
+  - [ ] OTP flow works for each director
+  - [ ] Success: "Resolution signed successfully!" for each director
+  - [ ] After all 3 sign: Opportunity status → "Consent Pending"
+
 ### TC-05c: Upload Entity Consent
 - **Type:** Happy path
 - **Login:** Not needed (consent page is public link from email)
+- **Prereqs:** TC-05r complete — all directors have signed the resolution, status is "Consent Pending"
 - **Steps:**
   1. Call testmail.app API to retrieve consent email (tag from contact person email)
+     - Subject: "Action Required: Provide Consent to Process Your Loan Application"
   2. Extract consent URL from email body (href matching `individual-application-consent`)
   3. Navigate to consent URL in browser
   4. Verify consent page loads (consent form heading visible)
@@ -616,8 +661,9 @@ Repeat the above block for each director:
 | Phase 1 | Lead created | — | — |
 | Phase 2 | Pre-screening passed | Draft | — |
 | Phase 3 | Entity Info + Directors + Signatories + Loan Info filled | Draft | — |
-| Phase 4 | Initiate Loan Application | Consent Pending | — |
-| Phase 4.5 | Upload Entity Consent | Verification In Progress | In Progress |
+| Phase 4 | Initiate Loan Application | **Resolution Pending** | — |
+| Phase 4a | ALL directors sign resolution | **Consent Pending** | — |
+| Phase 4b | Contact Person signs consent | Verification In Progress | In Progress |
 | Phase 5 | Finalise Verification Outcomes | Verification In Progress | In Progress (next step) |
 | Phase 6 | Submit Onboarding Checklist | **Complete** | **Completed** |
 
@@ -630,7 +676,7 @@ The following must be completed before "Initiate Loan Application" is enabled:
 2. At least one **Product** must be selected (via entity picker)
 3. **Requested Amount** must be greater than zero
 4. Entity Info mandatory fields: Entity Name, Company Registration Number, Contact Person Name, Surname, Email, Mobile, Client Classification
-5. **Auto Verify** must be unchecked (to trigger consent flow instead of auto-verification)
+5. ALL director emails must use testmail.app addresses (required for resolution signing)
 
 ---
 
@@ -647,8 +693,10 @@ The following must be completed before "Initiate Loan Application" is enabled:
 | Contact Person | N/A (client is the person) | Contact Person Title, Name, Surname, Email, Mobile |
 | Directors | N/A | Multiple directors with full details + marital info + spouse |
 | Signatories | N/A | First Name, Last Name, ID Number, Email, Mobile |
+| Post-initiate flow | Consent Pending → consent → Verification In Progress | Resolution Pending → (all directors sign) → Consent Pending → consent → Verification In Progress |
 | Verification (TC-06) | Individual Verifications (ID, Photo, KYC, Compliance) | Entity Verifications (CIPC Verification, Compliance, Signatories, Directors) |
 | Marital fields | Marital Status on client | Marital Status + Marital Regime on each director |
+| Director emails | N/A | ALL must use testmail.app for automated resolution signing |
 
 ---
 
@@ -682,8 +730,10 @@ The following must be completed before "Initiate Loan Application" is enabled:
 - Spouse fields only appear when Marital Regime = Married in Community of Property
 - Directors have Country Of Origin field (entity level does not)
 - Workflow requires Products + Amount > 0 before initiation
-- When Auto Verify is unchecked, initiation triggers consent flow (status: Consent Pending → email sent to contact person)
-- Consent email is sent to the Contact Person email address (per-applicant consent)
+- Initiation triggers resolution flow first (status: Resolution Pending → resolution emails sent to ALL directors)
+- ALL directors must sign the resolution before status progresses to Consent Pending
+- After all resolutions signed, consent email is sent to the Contact Person email address
+- ALL director emails MUST use testmail.app addresses for automated resolution signing
 - Entity verification uses CIPC check (not ID/KYC like Personal)
 - CIPC may return "Awaiting Review" with company name mismatch — this does not block finalization
 - Verification step auto-advances after "Finalise Verification Outcomes"
