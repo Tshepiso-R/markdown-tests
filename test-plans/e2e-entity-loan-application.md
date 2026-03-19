@@ -520,10 +520,12 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
 - **Entity Verification:**
   - Boxfusion (Reg: 2012/225386/07) — CIPC Verification
 
-- **Individual Verifications (3 directors):**
-  - Ian Houvet (7708206169188)
-  - Chamaine Houvet (7304190225085)
-  - Xolile Ndlangana (6311115651080)
+- **Individual Verifications (3 directors + 1 spouse):**
+  - Ian Houvet (7708206169188) — Director
+  - Chamaine Houvet (7304190225085) — Director AND Spouse of Ian (Married in Community of Property)
+  - Xolile Ndlangana (6311115651080) — Director
+
+  > **Spouse assertion:** Because Ian Houvet is Married in Community of Property, his spouse Chamaine Houvet (7304190225085) MUST appear in the Individual Verifications list. Assert she appears — if missing, flag as FAIL.
 
 - **Expected result:** Workflow advances to next step (Complete Onboarding Checklist)
 - **Assertions:**
@@ -531,6 +533,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   - [ ] Workflow page shows loan application details (read-only)
   - [ ] "Entity Verifications" section visible (not "Individual Verifications")
   - [ ] Entity CIPC verification reviewed (see report format below)
+  - [ ] **Spouse appears in verifications:** Chamaine Houvet (7304190225085) listed as individual for verification (spouse of Ian, community of property)
   - [ ] Ian Houvet verification reviewed (ID + KYC)
   - [ ] Chamaine Houvet verification reviewed (ID + KYC)
   - [ ] Xolile Ndlangana verification reviewed (ID + KYC)

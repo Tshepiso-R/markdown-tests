@@ -142,8 +142,21 @@ Each TC section must include:
 
 > Before clicking "Finalise Verification Outcomes", ALL individuals must be reviewed.
 
-**Personal loan:** Verify Main Applicant + Spouse (if married)
-**Entity loan:** Verify ALL — Entity (CIPC) + ALL Directors + ALL Signatories
+**Personal loan:** Verify Main Applicant + Spouse (if married in community of property)
+**Entity loan:** Verify ALL — Entity (CIPC) + ALL Directors + ALL Spouses (if married in community of property) + ALL Signatories
+
+### Spouse Verification — Married in Community of Property
+
+> If a director or applicant is Married in Community of Property, their **spouse must appear** in the Individual Verifications list as a separate entry.
+
+- After initiation, check the Individual Verifications section
+- **Assert** that the spouse (added during director/client setup) appears with their own "Awaiting Review" button
+- The spouse must be reviewed separately — same ID Verification + KYC tabs as any other individual
+- If the spouse does NOT appear in verifications, flag as `[!]` FAIL — the system should auto-include spouses for community of property marriages
+
+**Example:** If Director Ian Houvet is Married in Community of Property with Spouse Chamaine Houvet (7304190225085), then BOTH Ian and Chamaine must appear in Individual Verifications — even if Chamaine is also listed as a separate director.
+
+---
 
 For EACH individual listed in verifications:
 1. Click their "Awaiting Review" button

@@ -374,8 +374,10 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   12. **Before Finalise:** Verify there are ZERO "Awaiting Review" buttons remaining
   13. Only then click "Finalise Verification Outcomes"
 
-- **Individual Verifications (1 applicant):**
+- **Individual Verifications (1 applicant — Single, no spouse):**
   - Ian Houvet (7708206169188)
+
+  > **Note:** Marital Status is Single in this test. If Married in Community of Property, the spouse MUST also appear in Individual Verifications as a separate entry to review.
 
 - **Expected result:** Workflow advances to next step (Complete Onboarding Checklist)
 - **Assertions:**
