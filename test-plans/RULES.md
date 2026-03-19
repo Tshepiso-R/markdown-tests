@@ -115,8 +115,9 @@ Each TC section must include:
 ## After Testing
 
 1. Fill in the **Report Structure** section from the test plan
-2. Save the report to `test-reports/[module]-YYYY-MM-DDTHH-MM.md` (include time)
-3. Save screenshots to `test-reports/screenshots/[report-name]/` folder
+2. Create a folder: `test-reports/[module]-YYYY-MM-DDTHH-MM/`
+3. Save the report to `test-reports/[module]-YYYY-MM-DDTHH-MM/report.md`
+4. Save screenshots into the same folder: `test-reports/[module]-YYYY-MM-DDTHH-MM/tc01-lead-form.png`
 4. Summarize: total pass/fail/skip, top issues, and recommendations
 5. If any test plan steps are outdated (UI changed), note what needs updating
 
