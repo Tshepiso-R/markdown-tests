@@ -203,17 +203,64 @@ For EACH individual listed in verifications:
 GET https://api.testmail.app/api/json?apikey=b300bfdf-3e55-4478-9e27-072849073ed4&namespace=5s9ku&tag={tag}&livequery=true&timeout=60000
 ```
 
-**Consent flow steps:**
-1. Uncheck Auto Verify on opportunity before initiating
-2. After Initiate → status becomes "Consent Pending"
-3. Retrieve consent email (Subject: "Action Required: Provide Consent", from notifications@smartgov.co.za)
-4. Extract consent URL (href matching `individual-application-consent`)
-5. Open consent page → Click "Request OTP"
-6. Retrieve OTP email (Subject: "One-Time-Pin")
-7. Extract OTP: `Your One-Time-Pin is (\d+)`
-8. Submit OTP → Click "Submit OTP and Sign Consent" → Confirm
-9. Success: "Thank you for providing consent"
-10. Status changes to "Verification In Progress"
+**Personal loan consent flow:**
+1. After Initiate → status becomes "Consent Pending"
+2. Retrieve consent email (Subject: "Action Required: Provide Consent", from notifications@smartgov.co.za)
+3. Extract consent URL (href matching `individual-application-consent`)
+4. Open consent page → Click "Request OTP"
+5. Retrieve OTP email (Subject: "One-Time-Pin")
+6. Extract OTP: `Your One-Time-Pin is (\d+)`
+7. Submit OTP → Click "Submit OTP and Sign Consent" → Confirm
+8. Success: "Thank you for providing consent"
+9. Status changes to "Verification In Progress"
+
+**Entity loan flow (additional Resolution step):**
+1. After Initiate → status becomes "Resolution Pending" (not Consent Pending)
+2. ALL directors receive resolution emails (Subject: "Action Required: Company Resolution Needed")
+3. Each director must: open resolution URL → Request OTP → Submit OTP → Sign Resolution
+4. **ALL directors must sign** before status progresses to "Consent Pending"
+5. Then the consent flow follows (same as personal, sent to Contact Person email)
+6. **Important:** ALL director emails must use testmail.app addresses for automated testing
+
+---
+
+## Browser Interaction — Snapshot Only
+
+> **CRITICAL:** Never use `browser_evaluate` to interact with the UI or inspect hidden elements.
+
+- **Only use `browser_snapshot`** to see what's on the page, then click/type using element refs from the snapshot
+- If an element is **not visible in the snapshot**, it is hidden for a reason — do NOT use JavaScript to find, inspect, or click it
+- If a dropdown filter returns an empty snapshot, **retake the snapshot** after a brief wait — do not use `evaluate` to click the option directly
+- `browser_evaluate` is permitted **only** for debugging API/network errors (e.g. intercepting a 400 response body) — never for UI interaction
+- Trust the UI: if a checkbox or field is hidden, the current state doesn't require it
+
+---
+
+## Status & Toast Assertions
+
+> After every state-changing action, explicitly assert the result in the report.
+
+After **pre-screening**: assert both toasts ("Pre-assessment passed!", "Opportunity created!")
+After **navigating to opportunity**: assert Application Type (Personal / Entity) and Status (Draft)
+After **saving edits**: assert "Data saved successfully!" toast
+After **initiating loan**: assert toast and new status badge (Consent Pending / Resolution Pending)
+After **consent/resolution signing**: assert success message and status change (Verification In Progress)
+After **finalise verification**: assert workflow advances to next step
+After **onboarding checklist**: assert "Checklist saved successfully." and workflow COMPLETED
+
+---
+
+## Editing Opportunity — Single Save
+
+> Edit Client Info, Loan Info, and Farms in ONE edit session. Do not save between tabs.
+
+1. Click **Edit** once
+2. Fill all Client Info fields
+3. Switch to **Loan Info** tab — fill Product, Amount, Purpose, etc.
+4. Switch to **Farms** tab if needed
+5. Click **Save** once at the end
+
+This avoids unnecessary API calls and matches how a real user would interact with the form.
 
 ---
 
@@ -226,3 +273,5 @@ GET https://api.testmail.app/api/json?apikey=b300bfdf-3e55-4478-9e27-072849073ed
 - Do NOT skip steps within a test case — execute every step sequentially
 - Do NOT use new SA ID numbers — reuse the approved list above (verification costs money)
 - Do NOT assume a previous test's state carries over — each case is independent
+- Do NOT use `browser_evaluate` to click, select, or inspect hidden DOM elements
+- Do NOT save between tabs — edit all tabs in one session, save once
