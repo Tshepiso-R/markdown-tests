@@ -17,24 +17,210 @@ on:
 jobs:
   personal-loan:
     if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-personal-loan-application'
-    uses: ./.github/workflows/run-test.yml
-    with:
-      test_plan: e2e-personal-loan-application
-      trigger_type: ${{ github.event_name }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+      - name: Set report name
+        id: report
+        run: |
+          PREFIX=${{ github.event_name == 'schedule' && 'scheduled' || 'manual' }}
+          NAME="e2e-personal-loan-application-${PREFIX}-$(date +%Y-%m-%dT%H-%M)"
+          echo "name=${NAME}" >> $GITHUB_OUTPUT
+          echo "prefix=${PREFIX}" >> $GITHUB_OUTPUT
+      - name: Run tests
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            E2E test on CI. Run ID: ${{ github.run_id }}. Trigger: ${{ steps.report.outputs.prefix }}. BE EFFICIENT.
+            1. Read test-plans/RULES.md then test-plans/e2e-personal-loan-application.md
+            2. Execute ALL test cases. For TC-06: click Awaiting Review, review all tabs, then Finalise.
+            3. Save report to test-reports/${{ steps.report.outputs.name }}.md
+            4. Each TC: URL + pass/fail. No screenshots. UX issues at end.
+            5. Print RESULT: PASS or RESULT: FAIL
+            EFFICIENCY: No screenshots. Batch fill_form. Only snapshot after save/submit.
+            Environment: QA at landbankcrm-adminportal-qa.shesha.app
+            Admin: admin / ${{ secrets.ADMIN_PASSWORD }} | RM: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
+            IDs: 7708206169188 (Ian), 7304190225085 (Chamaine), 6311115651080 (Xolile), Reg: 2012/225386/07
+            Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
+          claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
+      - name: Post report to summary
+        if: always()
+        run: |
+          REPORT="test-reports/${{ steps.report.outputs.name }}.md"
+          if [ -f "$REPORT" ]; then
+            echo "## ${{ steps.report.outputs.name }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Trigger:** ${{ steps.report.outputs.prefix }} | **Plan:** e2e-personal-loan-application" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat "$REPORT" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## No report generated" >> $GITHUB_STEP_SUMMARY
+            ls -la test-reports/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
+          fi
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-personal-loan
+          path: test-reports/
+      - name: Commit report
+        if: success()
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git pull --rebase origin main || true
+          git add test-reports/*.md 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "CI: ${{ steps.report.outputs.prefix }} — personal-loan (#${{ github.run_number }})"
+          git push || true
 
   entity-loan:
     if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-entity-loan-application'
-    uses: ./.github/workflows/run-test.yml
-    with:
-      test_plan: e2e-entity-loan-application
-      trigger_type: ${{ github.event_name }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+      - name: Set report name
+        id: report
+        run: |
+          PREFIX=${{ github.event_name == 'schedule' && 'scheduled' || 'manual' }}
+          NAME="e2e-entity-loan-application-${PREFIX}-$(date +%Y-%m-%dT%H-%M)"
+          echo "name=${NAME}" >> $GITHUB_OUTPUT
+          echo "prefix=${PREFIX}" >> $GITHUB_OUTPUT
+      - name: Run tests
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            E2E test on CI. Run ID: ${{ github.run_id }}. Trigger: ${{ steps.report.outputs.prefix }}. BE EFFICIENT.
+            1. Read test-plans/RULES.md then test-plans/e2e-entity-loan-application.md
+            2. Execute ALL test cases. For TC-06: click Awaiting Review, review CIPC verification, then Finalise.
+            3. Save report to test-reports/${{ steps.report.outputs.name }}.md
+            4. Each TC: URL + pass/fail. No screenshots. UX issues at end.
+            5. Print RESULT: PASS or RESULT: FAIL
+            EFFICIENCY: No screenshots. Batch fill_form. Only snapshot after save/submit.
+            Environment: QA at landbankcrm-adminportal-qa.shesha.app
+            Admin: admin / ${{ secrets.ADMIN_PASSWORD }} | RM: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
+            IDs: 7708206169188 (Ian), 7304190225085 (Chamaine), 6311115651080 (Xolile), Reg: 2012/225386/07
+            Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
+          claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
+      - name: Post report to summary
+        if: always()
+        run: |
+          REPORT="test-reports/${{ steps.report.outputs.name }}.md"
+          if [ -f "$REPORT" ]; then
+            echo "## ${{ steps.report.outputs.name }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Trigger:** ${{ steps.report.outputs.prefix }} | **Plan:** e2e-entity-loan-application" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat "$REPORT" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## No report generated" >> $GITHUB_STEP_SUMMARY
+            ls -la test-reports/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
+          fi
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-entity-loan
+          path: test-reports/
+      - name: Commit report
+        if: success()
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git pull --rebase origin main || true
+          git add test-reports/*.md 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "CI: ${{ steps.report.outputs.prefix }} — entity-loan (#${{ github.run_number }})"
+          git push || true
 
   negative-edge:
     if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-negative-edge-cases'
-    uses: ./.github/workflows/run-test.yml
-    with:
-      test_plan: e2e-negative-edge-cases
-      trigger_type: ${{ github.event_name }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+      - name: Set report name
+        id: report
+        run: |
+          PREFIX=${{ github.event_name == 'schedule' && 'scheduled' || 'manual' }}
+          NAME="e2e-negative-edge-cases-${PREFIX}-$(date +%Y-%m-%dT%H-%M)"
+          echo "name=${NAME}" >> $GITHUB_OUTPUT
+          echo "prefix=${PREFIX}" >> $GITHUB_OUTPUT
+      - name: Run tests
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            E2E test on CI. Run ID: ${{ github.run_id }}. Trigger: ${{ steps.report.outputs.prefix }}. BE EFFICIENT.
+            1. Read test-plans/RULES.md then test-plans/e2e-negative-edge-cases.md
+            2. Execute ALL test cases sequentially.
+            3. Save report to test-reports/${{ steps.report.outputs.name }}.md
+            4. Each TC: URL + pass/fail + what was expected vs actual. No screenshots. UX issues at end.
+            5. Print RESULT: PASS or RESULT: FAIL
+            EFFICIENCY: No screenshots. Batch fill_form. Only snapshot after save/submit.
+            Environment: QA at landbankcrm-adminportal-qa.shesha.app
+            Admin: admin / ${{ secrets.ADMIN_PASSWORD }} | RM: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
+            IDs: 7708206169188 (Ian), 7304190225085 (Chamaine), 6311115651080 (Xolile), Reg: 2012/225386/07
+            Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
+          claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
+      - name: Post report to summary
+        if: always()
+        run: |
+          REPORT="test-reports/${{ steps.report.outputs.name }}.md"
+          if [ -f "$REPORT" ]; then
+            echo "## ${{ steps.report.outputs.name }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Trigger:** ${{ steps.report.outputs.prefix }} | **Plan:** e2e-negative-edge-cases" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat "$REPORT" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## No report generated" >> $GITHUB_STEP_SUMMARY
+            ls -la test-reports/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
+          fi
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-negative-edge
+          path: test-reports/
+      - name: Commit report
+        if: success()
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git pull --rebase origin main || true
+          git add test-reports/*.md 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "CI: ${{ steps.report.outputs.prefix }} — negative-edge (#${{ github.run_number }})"
+          git push || true

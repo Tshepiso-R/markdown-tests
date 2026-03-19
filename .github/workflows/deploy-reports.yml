@@ -1,13 +1,9 @@
 name: Deploy Reports to GitHub Pages
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - test-reports/**
-      - docs/**
-      - .github/workflows/deploy-reports.yml
   workflow_dispatch:
+  schedule:
+    - cron: "30 0 * * *"
 
 permissions:
   contents: read
