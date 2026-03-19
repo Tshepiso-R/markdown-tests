@@ -127,10 +127,45 @@ Each TC section must include:
 
 **Entity registration:** 2012/225386/07 (Boxfusion)
 
+**Email address:** Use testmail.app — `5s9ku.consent-[unique]@inbox.testmail.app`
+- Do NOT use `promise.raganya@boxfusion.io` — that inbox can't be queried programmatically
+- The tag (e.g. `consent-1710850000000`) must be unique per run for email isolation
+
 - **NEVER** generate or randomize ID numbers
 - **NEVER** use a new ID number not in this list
+- **ALWAYS** use testmail.app email addresses for leads (required for consent flow)
 - The **unique part** of each test run is the lead First Name (e.g. AutoCI12345) — not the ID
 - If a test requires a different person, ask the user for an approved ID first
+
+---
+
+## Consent Flow — Testmail.app API
+
+> **Every loan application requires consent.** Auto Verify is for internal testing only — the real flow includes email consent + OTP.
+
+| Field | Value |
+|-------|-------|
+| Service | testmail.app |
+| Namespace | 5s9ku |
+| API Key | b300bfdf-3e55-4478-9e27-072849073ed4 |
+| Email format | `5s9ku.{tag}@inbox.testmail.app` |
+
+**API call to retrieve emails:**
+```
+GET https://api.testmail.app/api/json?apikey=b300bfdf-3e55-4478-9e27-072849073ed4&namespace=5s9ku&tag={tag}&livequery=true&timeout=60000
+```
+
+**Consent flow steps:**
+1. Uncheck Auto Verify on opportunity before initiating
+2. After Initiate → status becomes "Consent Pending"
+3. Retrieve consent email (Subject: "Action Required: Provide Consent", from notifications@smartgov.co.za)
+4. Extract consent URL (href matching `individual-application-consent`)
+5. Open consent page → Click "Request OTP"
+6. Retrieve OTP email (Subject: "One-Time-Pin")
+7. Extract OTP: `Your One-Time-Pin is (\d+)`
+8. Submit OTP → Click "Submit OTP and Sign Consent" → Confirm
+9. Success: "Thank you for providing consent"
+10. Status changes to "Verification In Progress"
 
 ---
 

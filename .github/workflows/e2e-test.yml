@@ -43,20 +43,26 @@ jobs:
           prompt: |
             E2E test on CI. Run ID: ${{ github.run_id }}. Trigger: ${{ steps.report.outputs.prefix }}. BE EFFICIENT.
             1. Read test-plans/RULES.md then test-plans/e2e-personal-loan-application.md
-            2. Execute ALL test cases. For TC-06: click Awaiting Review, review all tabs, then Finalise.
-            3. Save report to test-reports/${{ steps.report.outputs.name }}.md
-            4. Each TC: URL + pass/fail. No screenshots. UX issues at end.
-            5. Print RESULT: PASS or RESULT: FAIL
+            2. Execute ALL test cases including TC-05c (consent flow).
+            3. For TC-05c: Use testmail.app API to retrieve consent email and OTP. Email format: 5s9ku.consent-${{ github.run_id }}@inbox.testmail.app. API: GET https://api.testmail.app/api/json?apikey=${{ secrets.TESTMAIL_API_KEY }}&namespace=5s9ku&tag=consent-${{ github.run_id }}&livequery=true&timeout=60000
+            4. For TC-06: click Awaiting Review, review all tabs, then Finalise.
+            5. Save report to test-reports/${{ steps.report.outputs.name }}.md
+            6. Each TC: URL + pass/fail. No screenshots. UX issues at end.
+            7. Print RESULT: PASS or RESULT: FAIL
             EFFICIENCY: No screenshots. Batch fill_form. Only snapshot after save/submit.
             Environment: QA at landbankcrm-adminportal-qa.shesha.app
             Admin: admin / ${{ secrets.ADMIN_PASSWORD }} | RM: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
             IDs: 7708206169188 (Ian), 7304190225085 (Chamaine), 6311115651080 (Xolile), Reg: 2012/225386/07
+            Email for lead: 5s9ku.consent-${{ github.run_id }}@inbox.testmail.app (NOT promise.raganya@boxfusion.io)
             Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
+            IMPORTANT: Uncheck Auto Verify before initiating. After initiate, expect "Consent Pending" not "Verification In Progress".
             CRITICAL: Only test YOUR OWN records (AutoCI${{ github.run_id }}). NEVER use another record as a substitute. If your record can't reach a step, mark it FAIL and explain why. If expected status doesn't match actual status, mark it FAIL — do NOT work around it.
           claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
         env:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
+          TESTMAIL_API_KEY: ${{ secrets.TESTMAIL_API_KEY }}
+          TESTMAIL_NAMESPACE: ${{ secrets.TESTMAIL_NAMESPACE }}
       - name: Post report to summary
         if: always()
         run: |
@@ -114,20 +120,26 @@ jobs:
           prompt: |
             E2E test on CI. Run ID: ${{ github.run_id }}. Trigger: ${{ steps.report.outputs.prefix }}. BE EFFICIENT.
             1. Read test-plans/RULES.md then test-plans/e2e-entity-loan-application.md
-            2. Execute ALL test cases. For TC-06: click Awaiting Review, review CIPC verification, then Finalise.
-            3. Save report to test-reports/${{ steps.report.outputs.name }}.md
-            4. Each TC: URL + pass/fail. No screenshots. UX issues at end.
-            5. Print RESULT: PASS or RESULT: FAIL
+            2. Execute ALL test cases including TC-05c (consent flow).
+            3. For TC-05c: Use testmail.app API to retrieve consent email and OTP. Email format: 5s9ku.consent-${{ github.run_id }}@inbox.testmail.app. API: GET https://api.testmail.app/api/json?apikey=${{ secrets.TESTMAIL_API_KEY }}&namespace=5s9ku&tag=consent-${{ github.run_id }}&livequery=true&timeout=60000
+            4. For TC-06: click Awaiting Review, review CIPC verification, then Finalise.
+            5. Save report to test-reports/${{ steps.report.outputs.name }}.md
+            6. Each TC: URL + pass/fail. No screenshots. UX issues at end.
+            7. Print RESULT: PASS or RESULT: FAIL
             EFFICIENCY: No screenshots. Batch fill_form. Only snapshot after save/submit.
             Environment: QA at landbankcrm-adminportal-qa.shesha.app
             Admin: admin / ${{ secrets.ADMIN_PASSWORD }} | RM: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
             IDs: 7708206169188 (Ian), 7304190225085 (Chamaine), 6311115651080 (Xolile), Reg: 2012/225386/07
+            Email for lead: 5s9ku.consent-${{ github.run_id }}@inbox.testmail.app (NOT promise.raganya@boxfusion.io)
             Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
+            IMPORTANT: Uncheck Auto Verify before initiating. After initiate, expect "Consent Pending" not "Verification In Progress".
             CRITICAL: Only test YOUR OWN records (AutoCI${{ github.run_id }}). NEVER use another record as a substitute. If your record can't reach a step, mark it FAIL and explain why. If expected status doesn't match actual status, mark it FAIL — do NOT work around it.
           claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
         env:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
+          TESTMAIL_API_KEY: ${{ secrets.TESTMAIL_API_KEY }}
+          TESTMAIL_NAMESPACE: ${{ secrets.TESTMAIL_NAMESPACE }}
       - name: Post report to summary
         if: always()
         run: |
@@ -199,6 +211,8 @@ jobs:
         env:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
+          TESTMAIL_API_KEY: ${{ secrets.TESTMAIL_API_KEY }}
+          TESTMAIL_NAMESPACE: ${{ secrets.TESTMAIL_NAMESPACE }}
       - name: Post report to summary
         if: always()
         run: |

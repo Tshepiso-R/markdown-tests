@@ -8,7 +8,7 @@
 | Prereqs     | Admin account for lead creation; RM account (Fatima) for workflow   |
 | Last tested | 2026-03-18                                                         |
 | Status      | Pass                                                               |
-| Test Data   | Boxfusion (Entity), Reg: 2012/225386/07, Contact: Ian Houvet       |
+| Test Data   | Boxfusion (Entity), Reg: 2012/225386/07, Contact: Ian Houvet, Email: 5s9ku.consent-[timestamp]@inbox.testmail.app |
 
 ---
 
@@ -34,7 +34,16 @@ PHASE 3: Opportunity Setup (RM — Fatima)
        └─ Opportunity status: Draft
 
 PHASE 4: Initiate Loan Application (RM — Fatima)
+  └─ Uncheck Auto Verify checkbox
   └─ Click "Initiate Loan Application"
+       └─ Opportunity status: Consent Pending
+       └─ Consent email sent to contact person
+
+PHASE 4.5: Upload Entity Consent (Contact Person, via email)
+  └─ Retrieve consent email from testmail.app API
+  └─ Open consent URL from email
+  └─ Request OTP → Retrieve OTP email → Submit OTP
+  └─ Sign consent
        └─ Opportunity status: Verification In Progress
        └─ Workflow item created in Inbox
 
@@ -80,7 +89,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | Entity76374 (unique per run) | Text | Yes |
   | Last Name | Houvet | Text | Yes |
   | Mobile Number | 0712345678 | Text | Yes |
-  | Email Address | promise.raganya@boxfusion.io | Text | Yes |
+  | Email Address | 5s9ku.consent-[timestamp]@inbox.testmail.app | Text | Yes |
   | Client Type | Close Corporation (Entity) | Dropdown | Yes |
   | Province | Gauteng | Dropdown | Yes |
   | Preferred Communication | Email | Dropdown | Yes |
@@ -183,7 +192,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | Contact Person Title | Mr | Dropdown |
   | Contact Person Name | Ian | Text |
   | Contact Person Surname | Houvet | Text |
-  | Contact Person Email | promise.raganya@boxfusion.io | Text |
+  | Contact Person Email | 5s9ku.consent-[timestamp]@inbox.testmail.app | Text |
   | Contact Person Mobile | 0712345678 | Text |
 - **Expected result:** "Data saved successfully!"
 - **Assertions:**
@@ -210,7 +219,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | Ian | Text |
   | Last Name | Houvet | Text |
   | ID Number | 7708206169188 | Text |
-  | Email | promise.raganya@boxfusion.io | Text |
+  | Email | 5s9ku.consent-[timestamp]@inbox.testmail.app | Text |
   | Mobile | 0712345678 | Text |
   | Citizenship | South Africa | Searchable dropdown |
   | Country Of Residence | South Africa | Searchable dropdown |
@@ -267,7 +276,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | Ian | Text |
   | Last Name | Houvet | Text |
   | ID Number | 7708206169188 | Text |
-  | Email | promise.raganya@boxfusion.io | Text |
+  | Email | 5s9ku.consent-[timestamp]@inbox.testmail.app | Text |
   | Mobile | 0712345678 | Text |
 - **Expected result:** "Data saved successfully!" — 1 signatory listed
 - **Assertions:**
@@ -344,15 +353,17 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
 ### TC-05: Initiate Loan Application
 - **Type:** Happy path
 - **Login:** RM (Fatima)
-- **Prereqs:** Entity Info filled, Directors added, Signatories added, Product selected, Requested Amount > 0
+- **Prereqs:** Entity Info filled, Directors added, Signatories added, Product selected, Requested Amount > 0, Auto Verify unchecked
 - **Steps:**
-  1. On opportunity page, click "Initiate Loan Application"
-- **Expected result:** Workflow starts, status changes
+  1. On opportunity page, click "Edit"
+  2. Uncheck the "Auto Verify" checkbox
+  3. Click "Save"
+  4. Click "Initiate Loan Application"
+- **Expected result:** Workflow starts, status changes to Consent Pending, consent email sent to contact person
 - **Assertions:**
-  - [x] "Loan Application submitted successfully" message
-  - [x] Opportunity status → "Verification In Progress"
-  - [x] "Initiate Loan Application" button disappears
-  - [x] Workflow item appears in Inbox
+  - [ ] "Loan Application submitted successfully" message
+  - [ ] Opportunity status → "Consent Pending"
+  - [ ] "Initiate Loan Application" button disappears
 
 ### TC-05a: Initiate without Requested Amount (negative)
 - **Type:** Negative
@@ -371,6 +382,45 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
 - **Assertions:**
   - [x] Error: "Cannot initiate workflow: at least one product is required."
   - [x] Status remains "Draft"
+
+### TC-05c: Upload Entity Consent
+- **Type:** Happy path
+- **Login:** Not needed (consent page is public link from email)
+- **Steps:**
+  1. Call testmail.app API to retrieve consent email (tag from contact person email)
+  2. Extract consent URL from email body (href matching `individual-application-consent`)
+  3. Navigate to consent URL in browser
+  4. Verify consent page loads (consent form heading visible)
+  5. Click "Request OTP" button
+  6. Verify toast: "The one-time-password (OTP) has been sent"
+  7. Call testmail.app API again with timestamp_from to get OTP email
+  8. Extract OTP from body using regex: `Your One-Time-Pin is (\d+)`
+  9. Fill OTP into input field
+  10. Click "Submit OTP and Sign Consent"
+  11. Click confirmation button in dialog
+  12. Verify success toast: "Thank you for providing consent"
+  13. Navigate back to opportunity page
+  14. Verify status changed to "Verification In Progress"
+- **Expected result:** Consent signed, status changes to "Verification In Progress"
+- **Assertions:**
+  - [ ] Consent email received via testmail.app API
+  - [ ] Consent URL extracted from email
+  - [ ] Consent page loaded
+  - [ ] OTP requested successfully (toast shown)
+  - [ ] OTP email received via testmail.app API
+  - [ ] OTP extracted from email body
+  - [ ] OTP submitted and consent signed
+  - [ ] Success toast: "Thank you for providing consent"
+  - [ ] Opportunity status: Verification In Progress
+
+### Testmail.app API (for consent/OTP emails)
+| Field | Value |
+|-------|-------|
+| Namespace | 5s9ku |
+| API Key | b300bfdf-3e55-4478-9e27-072849073ed4 |
+| Inbox domain | @inbox.testmail.app |
+| Email format | 5s9ku.{tag}@inbox.testmail.app |
+| API endpoint | GET https://api.testmail.app/api/json?apikey={key}&namespace={ns}&tag={tag}&livequery=true&timeout=60000 |
 
 ---
 
@@ -486,7 +536,8 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
 | Phase 1 | Lead created | — | — |
 | Phase 2 | Pre-screening passed | Draft | — |
 | Phase 3 | Entity Info + Directors + Signatories + Loan Info filled | Draft | — |
-| Phase 4 | Initiate Loan Application | Verification In Progress | In Progress |
+| Phase 4 | Initiate Loan Application | Consent Pending | — |
+| Phase 4.5 | Upload Entity Consent | Verification In Progress | In Progress |
 | Phase 5 | Finalise Verification Outcomes | Verification In Progress | In Progress (next step) |
 | Phase 6 | Submit Onboarding Checklist | **Complete** | **Completed** |
 
@@ -499,6 +550,7 @@ The following must be completed before "Initiate Loan Application" is enabled:
 2. At least one **Product** must be selected (via entity picker)
 3. **Requested Amount** must be greater than zero
 4. Entity Info mandatory fields: Entity Name, Company Registration Number, Contact Person Name, Surname, Email, Mobile, Client Classification
+5. **Auto Verify** must be unchecked (to trigger consent flow instead of auto-verification)
 
 ---
 
@@ -550,6 +602,8 @@ The following must be completed before "Initiate Loan Application" is enabled:
 - Spouse fields only appear when Marital Regime = Married in Community of Property
 - Directors have Country Of Origin field (entity level does not)
 - Workflow requires Products + Amount > 0 before initiation
+- When Auto Verify is unchecked, initiation triggers consent flow (status: Consent Pending → email sent to contact person)
+- Consent email is sent to the Contact Person email address (per-applicant consent)
 - Entity verification uses CIPC check (not ID/KYC like Personal)
 - CIPC may return "Awaiting Review" with company name mismatch — this does not block finalization
 - Verification step auto-advances after "Finalise Verification Outcomes"
@@ -571,6 +625,7 @@ The following must be completed before "Initiate Loan Application" is enabled:
 | TC-05 | Initiate Loan Application | Pass | 2026-03-18 | Fatima Abrahams |
 | TC-05a | Initiate without Amount (negative) | Pass | 2026-03-18 | Fatima Abrahams |
 | TC-05b | Initiate without Product (negative) | Pass | 2026-03-18 | Fatima Abrahams |
+| TC-05c | Upload Entity Consent | — | — | — |
 | TC-06 | Confirm Entity Verification Outcomes | Pass | 2026-03-18 | Fatima Abrahams |
 | TC-07 | Complete Onboarding Checklist | Pass | 2026-03-18 | Fatima Abrahams |
 

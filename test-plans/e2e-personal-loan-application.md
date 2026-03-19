@@ -8,7 +8,7 @@
 | Prereqs     | Admin account for lead creation; RM account (Fatima) for workflow   |
 | Last tested | 2026-03-17                                                         |
 | Status      | Pass                                                               |
-| Test Data   | Ian Houvet, ID: 7708206169188, Email: promise.raganya@boxfusion.io |
+| Test Data   | Ian Houvet, ID: 7708206169188, Email: 5s9ku.consent-[timestamp]@inbox.testmail.app |
 
 ---
 
@@ -31,7 +31,16 @@ PHASE 3: Opportunity Setup (RM — Fatima)
        └─ Opportunity status: Draft
 
 PHASE 4: Initiate Loan Application (RM — Fatima)
+  └─ Uncheck Auto Verify checkbox
   └─ Click "Initiate Loan Application"
+       └─ Opportunity status: Consent Pending
+       └─ Consent email sent to applicant
+
+PHASE 4.5: Upload Individual Consent (Applicant, via email)
+  └─ Retrieve consent email from testmail.app API
+  └─ Open consent URL from email
+  └─ Request OTP → Retrieve OTP email → Submit OTP
+  └─ Sign consent
        └─ Opportunity status: Verification In Progress
        └─ Workflow item created in Inbox
 
@@ -77,7 +86,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | IanH33468 (unique per run) | Text | Yes |
   | Last Name | Houvet | Text | Yes |
   | Mobile Number | 0712345678 | Text | Yes |
-  | Email Address | promise.raganya@boxfusion.io | Text | Yes |
+  | Email Address | 5s9ku.consent-[timestamp]@inbox.testmail.app | Text | Yes |
   | Client Type | Individual (Individual) | Dropdown | Yes |
   | Province | Gauteng | Dropdown | Yes |
   | Preferred Communication | Email | Dropdown | Yes |
@@ -162,7 +171,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | Client ID Number | 7708206169188 | Manual entry |
   | Client Name | Ian | Edit (was unique lead name) |
   | Client Surname | Houvet | Pre-filled |
-  | Email Address | promise.raganya@boxfusion.io | Pre-filled |
+  | Email Address | 5s9ku.consent-[timestamp]@inbox.testmail.app | Pre-filled |
   | Mobile Number | 0712345678 | Pre-filled |
   | Client Title | Mr | Pre-filled |
   | Preferred Communication | Email | Pre-filled |
@@ -252,15 +261,17 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
 ### TC-05: Initiate Loan Application
 - **Type:** Happy path
 - **Login:** RM (Fatima)
-- **Prereqs:** Client Info filled, Product selected, Requested Amount > 0
+- **Prereqs:** Client Info filled, Product selected, Requested Amount > 0, Auto Verify unchecked
 - **Steps:**
-  1. On opportunity page, click "Initiate Loan Application"
-- **Expected result:** Workflow starts, status changes
+  1. On opportunity page, click "Edit"
+  2. Uncheck the "Auto Verify" checkbox
+  3. Click "Save"
+  4. Click "Initiate Loan Application"
+- **Expected result:** Workflow starts, status changes to Consent Pending, consent email sent to applicant
 - **Assertions:**
-  - [x] "Loan Application submitted successfully" message
-  - [x] Opportunity status → "Verification In Progress"
-  - [x] "Initiate Loan Application" button disappears
-  - [x] Workflow item appears in Inbox
+  - [ ] "Loan Application submitted successfully" message
+  - [ ] Opportunity status → "Consent Pending"
+  - [ ] "Initiate Loan Application" button disappears
 
 ### TC-05a: Initiate without Requested Amount (negative)
 - **Type:** Negative
@@ -279,6 +290,45 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
 - **Assertions:**
   - [x] Error: "Cannot initiate workflow: at least one product is required."
   - [x] Status remains "Draft"
+
+### TC-05c: Upload Individual Consent
+- **Type:** Happy path
+- **Login:** Not needed (consent page is public link from email)
+- **Steps:**
+  1. Call testmail.app API to retrieve consent email (tag from lead email)
+  2. Extract consent URL from email body (href matching `individual-application-consent`)
+  3. Navigate to consent URL in browser
+  4. Verify consent page loads (consent form heading visible)
+  5. Click "Request OTP" button
+  6. Verify toast: "The one-time-password (OTP) has been sent"
+  7. Call testmail.app API again with timestamp_from to get OTP email
+  8. Extract OTP from body using regex: `Your One-Time-Pin is (\d+)`
+  9. Fill OTP into input field
+  10. Click "Submit OTP and Sign Consent"
+  11. Click confirmation button in dialog
+  12. Verify success toast: "Thank you for providing consent"
+  13. Navigate back to opportunity page
+  14. Verify status changed to "Verification In Progress"
+- **Expected result:** Consent signed, status changes to "Verification In Progress"
+- **Assertions:**
+  - [ ] Consent email received via testmail.app API
+  - [ ] Consent URL extracted from email
+  - [ ] Consent page loaded
+  - [ ] OTP requested successfully (toast shown)
+  - [ ] OTP email received via testmail.app API
+  - [ ] OTP extracted from email body
+  - [ ] OTP submitted and consent signed
+  - [ ] Success toast: "Thank you for providing consent"
+  - [ ] Opportunity status: Verification In Progress
+
+### Testmail.app API (for consent/OTP emails)
+| Field | Value |
+|-------|-------|
+| Namespace | 5s9ku |
+| API Key | b300bfdf-3e55-4478-9e27-072849073ed4 |
+| Inbox domain | @inbox.testmail.app |
+| Email format | 5s9ku.{tag}@inbox.testmail.app |
+| API endpoint | GET https://api.testmail.app/api/json?apikey={key}&namespace={ns}&tag={tag}&livequery=true&timeout=60000 |
 
 ---
 
@@ -380,7 +430,8 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
 | Phase 1 | Lead created | — | — |
 | Phase 2 | Pre-screening passed | Draft | — |
 | Phase 3 | Client Info + Loan Info filled | Draft | — |
-| Phase 4 | Initiate Loan Application | Verification In Progress | In Progress |
+| Phase 4 | Initiate Loan Application | Consent Pending | — |
+| Phase 4.5 | Upload Individual Consent | Verification In Progress | In Progress |
 | Phase 5 | Finalise Verification Outcomes | Verification In Progress | In Progress (next step) |
 | Phase 6 | Submit Onboarding Checklist | **Complete** | **Completed** |
 
@@ -393,6 +444,7 @@ The following must be completed before "Initiate Loan Application" is enabled:
 2. At least one **Product** must be selected (via entity picker)
 3. **Requested Amount** must be greater than zero
 4. Client Info mandatory fields: Client Name, Surname, Email, Mobile, Preferred Communication, Client Classification
+5. **Auto Verify** must be unchecked (to trigger consent flow instead of auto-verification)
 
 ---
 
