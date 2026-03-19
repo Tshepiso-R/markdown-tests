@@ -126,11 +126,12 @@ For EACH individual listed in "Individual Verifications":
    - ID Match: Passed/Failed
    - Death Check: Passed/Failed
    - Outcome: Passed/Failed/TBD
-   - If any check is not Passed → make a Review Decision (Approve/Reject)
+   - **Always** select a Review Decision (Approve if all passed, Reject if failed)
+   - Click Submit on the review
 3. **KYC Verification tab** — assert:
    - First Name Match Status: Passed/Failed
    - Outcome: Passed/Failed
-   - If needs review → select KYC First Name Review Decision
+   - **Always** select KYC First Name Review Decision (Approve if passed)
 4. Close dialog
 5. Repeat for EVERY individual
 
@@ -148,11 +149,13 @@ For EACH individual listed in "Individual Verifications":
 - [x] ID Match: Passed
 - [x] Death Check: Passed
 - [x] Outcome: Passed
+- Review Decision: Approve (selected + submitted)
 **KYC Verification:** Status: [X] | Date: [X]
 - Submitted: [ID Number]
 - Returned: [First Name], Address: [X], Cell: [X], Employer: [X]
 - [x] First Name Match: Passed
 - [x] Outcome: Passed
+- KYC First Name Review Decision: Approve (selected)
 ```
 
 ---
