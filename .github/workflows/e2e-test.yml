@@ -52,6 +52,7 @@ jobs:
             Admin: admin / ${{ secrets.ADMIN_PASSWORD }} | RM: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
             IDs: 7708206169188 (Ian), 7304190225085 (Chamaine), 6311115651080 (Xolile), Reg: 2012/225386/07
             Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
+            CRITICAL: Only test YOUR OWN records (AutoCI${{ github.run_id }}). NEVER use another record as a substitute. If your record can't reach a step, mark it FAIL and explain why. If expected status doesn't match actual status, mark it FAIL — do NOT work around it.
           claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
         env:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
@@ -122,6 +123,7 @@ jobs:
             Admin: admin / ${{ secrets.ADMIN_PASSWORD }} | RM: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
             IDs: 7708206169188 (Ian), 7304190225085 (Chamaine), 6311115651080 (Xolile), Reg: 2012/225386/07
             Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
+            CRITICAL: Only test YOUR OWN records (AutoCI${{ github.run_id }}). NEVER use another record as a substitute. If your record can't reach a step, mark it FAIL and explain why. If expected status doesn't match actual status, mark it FAIL — do NOT work around it.
           claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
         env:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
@@ -192,6 +194,7 @@ jobs:
             Admin: admin / ${{ secrets.ADMIN_PASSWORD }} | RM: fatima.abrahams@landbank.co.za / ${{ secrets.RM_PASSWORD }}
             IDs: 7708206169188 (Ian), 7304190225085 (Chamaine), 6311115651080 (Xolile), Reg: 2012/225386/07
             Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
+            CRITICAL: Only test YOUR OWN records (AutoCI${{ github.run_id }}). NEVER use another record as a substitute. If your record can't reach a step, mark it FAIL and explain why. If expected status doesn't match actual status, mark it FAIL — do NOT work around it.
           claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
         env:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}

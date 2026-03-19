@@ -110,6 +110,8 @@ Each TC section must include:
 - **If a dialog has multiple tabs** — click EACH tab and snapshot EACH one before closing
 - **If you are about to skip a step** — STOP. Go back and execute it.
 - A test case with skipped steps is a **FAIL**, not a PASS
+- **NEVER use a different record** to complete a test case — if YOUR test data can't reach a step, mark it FAIL and explain why
+- **NEVER work around** a discrepancy by substituting data — report it as a failure
 
 ---
 
