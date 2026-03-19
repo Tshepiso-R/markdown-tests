@@ -119,10 +119,10 @@ Each TC section must include:
 
 1. Fill in the **Report Structure** section from the test plan
 2. Save the report to `test-reports/[module]/[module]-YYYY-MM-DDTHH-MM.md`
-3. Save screenshots to `test-reports/[module]/screenshots/tc01-lead-form.png`
-   - Folder is named by module (e.g. `personal-loan`, `entity-loan`)
-   - File has the datetime stamp (e.g. `personal-loan-2026-03-19T15-18.md`)
-   - Screenshots go in a `screenshots/` subfolder within the module folder
+3. Save screenshots to `test-reports/screenshots/[module]/tc01-lead-form.png`
+   - Reports folder is named by module (e.g. `personal-loan`, `entity-loan`)
+   - Report file has the datetime stamp (e.g. `personal-loan-2026-03-19T15-18.md`)
+   - Screenshots go in `test-reports/screenshots/[module]/` — one subfolder per test plan
 4. Summarize: total pass/fail/skip, top issues, and recommendations
 5. If any test plan steps are outdated (UI changed), note what needs updating
 
