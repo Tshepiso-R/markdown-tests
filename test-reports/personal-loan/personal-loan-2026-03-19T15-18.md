@@ -16,7 +16,7 @@
 
 ## TC-01: Create Individual Lead
 **Result:** PASS
-**URL:** /dynamic/LandBank.Crm/LBLead-table
+**URL:** https://landbankcrm-adminportal-qa.shesha.app/dynamic/LandBank.Crm/LBLead-table
 **Login:** admin
 
 ### Steps Followed
@@ -37,7 +37,7 @@
 
 ## TC-02: Initiate Pre-Screening
 **Result:** PASS
-**URL:** /dynamic/LandBank.Crm/LBLead-details?id=33408bc5-5d12-45c8-a917-8949136e1578
+**URL:** https://landbankcrm-adminportal-qa.shesha.app/dynamic/LandBank.Crm/LBLead-details?id=33408bc5-5d12-45c8-a917-8949136e1578
 **Login:** admin
 
 ### Steps Followed
@@ -62,7 +62,7 @@
 
 ## TC-03: Edit Client Info
 **Result:** PASS
-**URL:** /dynamic/LandBank.Crm/LBOpportunity-details?id=70fcd336-1eac-4396-a639-d1c87d7bb615
+**URL:** https://landbankcrm-adminportal-qa.shesha.app/dynamic/LandBank.Crm/LBOpportunity-details?id=70fcd336-1eac-4396-a639-d1c87d7bb615
 **Login:** admin
 
 ### Steps Followed
@@ -94,6 +94,7 @@
 
 ## TC-04: Fill Loan Info
 **Result:** PASS
+**URL:** https://landbankcrm-adminportal-qa.shesha.app/dynamic/LandBank.Crm/LBOpportunity-details?id=70fcd336-1eac-4396-a639-d1c87d7bb615
 **Login:** admin
 
 ### Steps Followed
@@ -117,6 +118,7 @@
 
 ## TC-05: Initiate Loan Application
 **Result:** PASS
+**URL:** https://landbankcrm-adminportal-qa.shesha.app/dynamic/LandBank.Crm/LBOpportunity-details?id=70fcd336-1eac-4396-a639-d1c87d7bb615
 **Login:** admin
 
 ### Steps Followed
@@ -132,6 +134,7 @@
 
 ## TC-05c: Upload Individual Consent
 **Result:** PASS
+**URL:** https://landbankcrm-adminportal-qa.shesha.app/no-auth/LandBank.Crm/individual-application-consent?approvalGuid=652bae9a-e76d-47ad-becc-a3daf10ee03a
 
 ### Steps Followed
 1. Called testmail.app API (tag: consent-p1773926307) - received consent email
@@ -162,7 +165,7 @@
 
 ## TC-06: Review and Finalise Verification
 **Result:** PASS
-**URL:** /shesha/workflow-action (LA2026/0995)
+**URL:** https://landbankcrm-adminportal-qa.shesha.app/shesha/workflow-action?id=24ba9c8c-f76a-4703-b96f-86f1175fd443&todoid=5a251092-ec91-47a3-b0e5-5bce1a662a3c
 **Login:** Fatima Abrahams
 
 ### Steps Followed
@@ -216,6 +219,7 @@
 
 ## TC-07: Complete Onboarding Checklist
 **Result:** PASS
+**URL:** https://landbankcrm-adminportal-qa.shesha.app/shesha/workflow-action?id=24ba9c8c-f76a-4703-b96f-86f1175fd443&todoid=9b9f1974-3fc2-4282-b667-445f48f385c2
 **Login:** Fatima Abrahams
 
 ### Steps Followed

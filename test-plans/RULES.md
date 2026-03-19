@@ -16,6 +16,9 @@ These rules govern how Claude should execute markdown test plans.
 ## During Testing
 
 ### Navigation
+- **Always use the sidebar menu** to navigate between pages — never paste a URL directly into the browser
+- Navigate like a real user: click Leads in the sidebar, click a row to open details, click "Converted To Opportunity" link, etc.
+- The only exceptions for direct URL navigation: consent/resolution pages (from email links) and returning to a page after login
 - Use browser snapshot before every action to see current state
 - Never assume a page has loaded — verify with a snapshot
 - If a page redirects unexpectedly, note it and continue
@@ -116,9 +119,10 @@ Each TC section must include:
 
 1. Fill in the **Report Structure** section from the test plan
 2. Save the report to `test-reports/[module]/[module]-YYYY-MM-DDTHH-MM.md`
-3. Save screenshots to the same folder: `test-reports/[module]/tc01-lead-form.png`
+3. Save screenshots to `test-reports/[module]/screenshots/tc01-lead-form.png`
    - Folder is named by module (e.g. `personal-loan`, `entity-loan`)
    - File has the datetime stamp (e.g. `personal-loan-2026-03-19T15-18.md`)
+   - Screenshots go in a `screenshots/` subfolder within the module folder
 4. Summarize: total pass/fail/skip, top issues, and recommendations
 5. If any test plan steps are outdated (UI changed), note what needs updating
 
