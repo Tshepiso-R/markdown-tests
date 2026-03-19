@@ -83,35 +83,26 @@
 ### Results
 
 #### TC-01: [description]
-- **URL:** `https://landbankcrm-adminportal-qa.shesha.app/dynamic/...`
+- **URL:** `https://...`
 - **Result:** Pass / Fail
-- **Notes:** [Any observations]
 
 ##### Steps Followed
 1. [Step with URL visited]
 2. [Step with action taken]
 
-##### Snapshots
-| Screenshot | Description |
-|-----------|-------------|
-| ![Lead form](../screenshots/report-name/tc01-form.png) | Lead creation form filled |
-| ![Lead saved](../screenshots/report-name/tc01-saved.png) | Lead saved in table |
-
-##### Input vs Output
-| Field | Submitted | Returned | Match |
-|-------|-----------|----------|-------|
-| First Name | Test | Test | YES |
+##### Assertions
+- [x] [Thing verified] — [actual value]
+- [x] [Another thing] — [actual value]
+- [ ] [Failed assertion] — Expected: [X], Actual: [Y]
 
 #### TC-02: [description]
-- **URL:** `https://landbankcrm-adminportal-qa.shesha.app/dynamic/...`
+- **URL:** `https://...`
 - **Result:** Fail
 - **Failure reason:** [What went wrong]
-- **Actual vs Expected:** [Comparison]
 
-##### Snapshots
-| Screenshot | Description |
-|-----------|-------------|
-| ![Error](../screenshots/report-name/tc02-error.png) | Validation error shown |
+##### Assertions
+- [x] [Passed assertion]
+- [!] [Failed assertion] — Expected: [X], Actual: [Y]
 
 ### Issues Found
 | # | Test Case | Severity | Description              |

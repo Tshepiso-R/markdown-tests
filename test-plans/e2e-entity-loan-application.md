@@ -435,40 +435,120 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   2. Find the workflow item (Ref No: LA2026/XXXX, Action: "Confirm verification outcomes")
   3. Click the search icon to open it
   4. Review the loan application details (Entity Info, Loan Info, Farms — read-only)
-  5. In "Entity Verifications" section, click "Awaiting Review" button
-  6. Review CIPC Verification details in the dialog
-  7. Review Compliance Status
-  8. Review Signatories list
-  9. Review Directors list
-  10. Close the dialog
-  11. Click "Finalise Verification Outcomes"
-- **CIPC Verification Details Observed:**
-  | Field | Value |
-  |-------|-------|
-  | Status | Awaiting Review |
-  | Reason for Failure | Company name mismatch: Trade name '', Company name 'BOXFUSION (PTY)LTD' |
-  | Submitted Reg Number | 2012/225386/07 |
-  | Submitted Company Name | (from entity name) |
-  | Returned Reg Number | K2012/225386/07 |
-  | Returned Company Name | BOXFUSION (PTY)LTD |
-  | Business Status | In Business |
-  | Company Type | Private Company |
-  | VAT Number | 4760252900 |
-  | Company Age | 13 Years 3 Months |
-  | Registration Date | 2012-12-19 |
-  | Physical Address | International Business Gateway, New Road Midridge Park, Midrand, Gauteng, 1684 |
+  5. **Review Entity CIPC Verification:**
+     a. In "Entity Verifications" section, click "Awaiting Review" for the entity
+     b. Record CIPC Verification details (Status, Submitted vs Returned data)
+     c. If CIPC status is "Awaiting Review" → make a Review Decision (Approve/Reject) before proceeding
+     d. Close the entity verification dialog
+     e. Verify the entity status badge changed from "Awaiting Review"
+  6. **For EACH director in "Individual Verifications" section**, perform steps 7–12:
+  7. Click "Awaiting Review" for the director
+  8. **Overview tab** — record and assert:
+     - ID Status (expect: Completed or Awaiting Review)
+     - Photo Verification Status
+     - KYC Status
+     - Compliance Verification
+  9. **ID Verification tab** — record and assert:
+     - Status + Date Submitted
+     - Submitted data: First Name, Last Name, ID Number
+     - Returned data: First Name, Last Name, ID Number, DOB, Gender
+     - Assert each check:
+       - [ ] Name Match: Passed/Failed/Requires Review
+       - [ ] ID Match: Passed/Failed
+       - [ ] Death Check: Passed/Failed
+       - [ ] Outcome: Passed/Failed/TBD
+     - If Outcome is not Passed or Name Match is not Passed → must make a Review Decision (Approve/Reject) before proceeding
+     - Face Photo: present or "No image available"
+  10. **KYC Verification tab** — record and assert:
+      - Status + Date Submitted
+      - Submitted data: ID Number
+      - Returned data: ID Number, First Name, Address, Cell Number, Employer, etc.
+      - Assert:
+        - [ ] First Name Match Status: Passed/Failed
+        - [ ] Outcome: Passed/Failed
+      - If needs review → select KYC Verification First Name Review Decision before proceeding
+  11. Close dialog for this director
+  12. Verify their status badge changed from "Awaiting Review" to something else (Completed/Reviewed)
+  13. **Before Finalise:** Verify there are ZERO "Awaiting Review" buttons remaining (entity + all directors)
+  14. Only then click "Finalise Verification Outcomes"
+
+- **Entity Verification:**
+  - Boxfusion (Reg: 2012/225386/07) — CIPC Verification
+
+- **Individual Verifications (3 directors):**
+  - Ian Houvet (7708206169188)
+  - Chamaine Houvet (7304190225085)
+  - Xolile Ndlangana (6311115651080)
+
 - **Expected result:** Workflow advances to next step (Complete Onboarding Checklist)
 - **Assertions:**
-  - [x] Inbox shows workflow item with "Confirm verification outcomes" action
-  - [x] Workflow page shows loan application details (read-only)
-  - [x] "Entity Verifications" section visible (not "Individual Verifications")
-  - [x] "Awaiting Review" button opens CIPC verification detail dialog
-  - [x] CIPC Verification shows submitted vs returned company details
-  - [x] Compliance Status visible
-  - [x] Signatories list visible in verification dialog
-  - [x] Directors list visible in verification dialog
-  - [x] "Finalise Verification Outcomes" button advances workflow
-  - [x] Auto-redirects to "Complete Onboarding Checklist" step
+  - [ ] Inbox shows workflow item with "Confirm verification outcomes" action
+  - [ ] Workflow page shows loan application details (read-only)
+  - [ ] "Entity Verifications" section visible (not "Individual Verifications")
+  - [ ] Entity CIPC verification reviewed (see report format below)
+  - [ ] Ian Houvet verification reviewed (ID + KYC)
+  - [ ] Chamaine Houvet verification reviewed (ID + KYC)
+  - [ ] Xolile Ndlangana verification reviewed (ID + KYC)
+  - [ ] Zero "Awaiting Review" buttons remaining before Finalise
+  - [ ] "Finalise Verification Outcomes" button advances workflow
+  - [ ] Auto-redirects to "Complete Onboarding Checklist" step
+
+#### Report Format for TC-06
+
+For the entity, record CIPC verification using this format:
+
+```
+### Entity: Boxfusion (2012/225386/07)
+
+**CIPC Verification:**
+- Status: Completed / Awaiting Review
+- Reason for Failure: (if any, e.g., Company name mismatch)
+- Submitted: Reg Number 2012/225386/07, Company Name (from entity)
+- Returned: Reg Number K2012/225386/07, Company Name BOXFUSION (PTY)LTD
+- Business Status: In Business
+- Company Type: Private Company
+- VAT Number: 4760252900
+- Company Age: 13 Years 3 Months
+- Registration Date: 2012-12-19
+- Physical Address: International Business Gateway, New Road Midridge Park, Midrand, Gauteng, 1684
+- Review Decision: Approve / Reject / Not required
+```
+
+For each director, record verification outcomes using this format:
+
+```
+### Individual: Ian Houvet (7708206169188)
+
+**Overview:**
+- ID Status: Completed / Awaiting Review
+- Photo Verification Status: Completed / Awaiting Review
+- KYC Status: Completed / Initiated / Awaiting Review
+- Compliance Verification: Completed / Awaiting Review
+
+**ID Verification:**
+- Status: Completed | Date: DD/MM/YYYY
+- Submitted: Ian Houvet, 7708206169188
+- Returned: IAN HOUVET, 7708206169188, DOB 20/08/1977, Male
+- Name Match: [x] Passed
+- ID Match: [x] Passed
+- Death Check: [x] Passed
+- Outcome: [x] Passed
+- Face Photo: Present / No image available
+- Review Decision: Not required (all passed) / Approve / Reject
+
+**KYC Verification:**
+- Status: Completed | Date: DD/MM/YYYY
+- Submitted: 7708206169188
+- Returned: IAN, Address: 34 VINCENT AVE..., Cell: 0761598891, Employer: BOXFUSION
+- First Name Match: [x] Passed
+- Outcome: [x] Passed
+- Review Decision: Not required (all passed) / Approve / Reject
+```
+
+Repeat the above block for each director:
+- Ian Houvet (7708206169188)
+- Chamaine Houvet (7304190225085)
+- Xolile Ndlangana (6311115651080)
 
 ### Alternative Actions Available (not tested)
 - **Flag As High Risk** — routes to different workflow path (to be tested)

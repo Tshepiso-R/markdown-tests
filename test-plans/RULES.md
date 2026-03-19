@@ -115,6 +115,48 @@ Each TC section must include:
 
 ---
 
+## Verification Review — Must Review Every Individual
+
+> Before clicking "Finalise Verification Outcomes", ALL individuals must be reviewed.
+
+For EACH individual listed in "Individual Verifications":
+1. Click their "Awaiting Review" button
+2. **ID Verification tab** — assert:
+   - Name Match: Passed/Failed/Requires Review
+   - ID Match: Passed/Failed
+   - Death Check: Passed/Failed
+   - Outcome: Passed/Failed/TBD
+   - If any check is not Passed → make a Review Decision (Approve/Reject)
+3. **KYC Verification tab** — assert:
+   - First Name Match Status: Passed/Failed
+   - Outcome: Passed/Failed
+   - If needs review → select KYC First Name Review Decision
+4. Close dialog
+5. Repeat for EVERY individual
+
+**Before clicking Finalise:**
+- Verify ZERO "Awaiting Review" buttons remain
+- Only then click "Finalise Verification Outcomes"
+
+**Report format per individual** (no tables — use assertion lists):
+```
+### Individual: [Name] ([ID Number])
+**ID Verification:** Status: [X] | Date: [X]
+- Submitted: [First Name] [Last Name], [ID Number]
+- Returned: [FIRST NAME] [LAST NAME], [ID Number], DOB [X], [Gender]
+- [x] Name Match: Passed
+- [x] ID Match: Passed
+- [x] Death Check: Passed
+- [x] Outcome: Passed
+**KYC Verification:** Status: [X] | Date: [X]
+- Submitted: [ID Number]
+- Returned: [First Name], Address: [X], Cell: [X], Employer: [X]
+- [x] First Name Match: Passed
+- [x] Outcome: Passed
+```
+
+---
+
 ## Test Data — Reuse IDs (Cost Rule)
 
 > **CRITICAL:** Each new SA ID number triggers a paid verification API call. Always reuse the approved IDs below.

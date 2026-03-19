@@ -343,26 +343,82 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   2. Find the workflow item (Ref No: LA2026/XXXX, Action: "Confirm verification outcomes")
   3. Click the search icon to open it
   4. Review the loan application details (Client Info, Loan Info, Farms — read-only)
-  5. In "Individual Verifications" section, click "Awaiting Review" button
-  6. Review verification statuses in the dialog (Overview, ID Verification, KYC Verification tabs)
-  7. Close the dialog
-  8. Click "Finalise Verification Outcomes"
-- **Verification Details Observed:**
-  | Verification | Status |
-  |-------------|--------|
-  | ID Status | Completed |
-  | Photo Verification Status | Awaiting Review |
-  | KYC Status | Initiated |
-  | Compliance Verification | Completed |
+  5. **For each individual in "Individual Verifications" section**, perform steps 6–11:
+  6. Click "Awaiting Review" for the individual
+  7. **Overview tab** — record and assert:
+     - ID Status (expect: Completed or Awaiting Review)
+     - Photo Verification Status
+     - KYC Status
+     - Compliance Verification
+  8. **ID Verification tab** — record and assert:
+     - Status + Date Submitted
+     - Submitted data: First Name, Last Name, ID Number
+     - Returned data: First Name, Last Name, ID Number, DOB, Gender
+     - Assert each check:
+       - [ ] Name Match: Passed/Failed/Requires Review
+       - [ ] ID Match: Passed/Failed
+       - [ ] Death Check: Passed/Failed
+       - [ ] Outcome: Passed/Failed/TBD
+     - If Outcome is not Passed or Name Match is not Passed → must make a Review Decision (Approve/Reject) before proceeding
+     - Face Photo: present or "No image available"
+  9. **KYC Verification tab** — record and assert:
+     - Status + Date Submitted
+     - Submitted data: ID Number
+     - Returned data: ID Number, First Name, Address, Cell Number, Employer, etc.
+     - Assert:
+       - [ ] First Name Match Status: Passed/Failed
+       - [ ] Outcome: Passed/Failed
+     - If needs review → select KYC Verification First Name Review Decision before proceeding
+  10. Close dialog for this individual
+  11. Verify their status badge changed from "Awaiting Review" to something else (Completed/Reviewed)
+  12. **Before Finalise:** Verify there are ZERO "Awaiting Review" buttons remaining
+  13. Only then click "Finalise Verification Outcomes"
+
+- **Individual Verifications (1 applicant):**
+  - Ian Houvet (7708206169188)
+
 - **Expected result:** Workflow advances to next step (Complete Onboarding Checklist)
 - **Assertions:**
-  - [x] Inbox shows workflow item with "Confirm verification outcomes" action
-  - [x] Workflow page shows loan application details (read-only)
-  - [x] "Individual Verifications" section shows applicant: Ian Houvet
-  - [x] "Awaiting Review" button opens verification detail dialog
-  - [x] Verification dialog has Overview, ID Verification, KYC Verification tabs
-  - [x] "Finalise Verification Outcomes" button advances workflow
-  - [x] Auto-redirects to "Complete Onboarding Checklist" step
+  - [ ] Inbox shows workflow item with "Confirm verification outcomes" action
+  - [ ] Workflow page shows loan application details (read-only)
+  - [ ] "Individual Verifications" section shows applicant: Ian Houvet
+  - [ ] Ian Houvet verification reviewed (see report format below)
+  - [ ] Zero "Awaiting Review" buttons remaining before Finalise
+  - [ ] "Finalise Verification Outcomes" button advances workflow
+  - [ ] Auto-redirects to "Complete Onboarding Checklist" step
+
+#### Report Format for TC-06
+
+For each individual, record verification outcomes using this format:
+
+```
+### Individual: Ian Houvet (7708206169188)
+
+**Overview:**
+- ID Status: Completed / Awaiting Review
+- Photo Verification Status: Completed / Awaiting Review
+- KYC Status: Completed / Initiated / Awaiting Review
+- Compliance Verification: Completed / Awaiting Review
+
+**ID Verification:**
+- Status: Completed | Date: DD/MM/YYYY
+- Submitted: Ian Houvet, 7708206169188
+- Returned: IAN HOUVET, 7708206169188, DOB 20/08/1977, Male
+- Name Match: [x] Passed
+- ID Match: [x] Passed
+- Death Check: [x] Passed
+- Outcome: [x] Passed
+- Face Photo: Present / No image available
+- Review Decision: Not required (all passed) / Approve / Reject
+
+**KYC Verification:**
+- Status: Completed | Date: DD/MM/YYYY
+- Submitted: 7708206169188
+- Returned: IAN, Address: 34 VINCENT AVE..., Cell: 0761598891, Employer: BOXFUSION
+- First Name Match: [x] Passed
+- Outcome: [x] Passed
+- Review Decision: Not required (all passed) / Approve / Reject
+```
 
 ### Alternative Actions Available (not tested)
 - **Flag As High Risk** — routes to different workflow path (to be tested)
