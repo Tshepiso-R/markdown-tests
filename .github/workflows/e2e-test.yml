@@ -32,7 +32,7 @@ jobs:
     secrets: inherit
 
   negative-edge:
-    if: inputs.test_plan == 'e2e-negative-edge-cases'
+    if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-negative-edge-cases'
     uses: ./.github/workflows/run-test.yml
     with:
       test_plan: e2e-negative-edge-cases
