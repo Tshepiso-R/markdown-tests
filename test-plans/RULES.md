@@ -119,7 +119,10 @@ Each TC section must include:
 
 > Before clicking "Finalise Verification Outcomes", ALL individuals must be reviewed.
 
-For EACH individual listed in "Individual Verifications":
+**Personal loan:** Verify Main Applicant + Spouse (if married)
+**Entity loan:** Verify ALL — Entity (CIPC) + ALL Directors + ALL Signatories
+
+For EACH individual listed in verifications:
 1. Click their "Awaiting Review" button
 2. **ID Verification tab** — assert:
    - Name Match: Passed/Failed/Requires Review
