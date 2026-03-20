@@ -105,11 +105,13 @@ Claude will:
 
 Tests run automatically via GitHub Actions (`.github/workflows/e2e-test.yml`):
 
-- **Scheduled:** Runs daily at midnight (UTC) — executes all test plans
-- **Manual dispatch:** Trigger from Actions tab, select which test plan to run
+- **Nightly schedule:** Runs daily at midnight UTC — executes **all 3 test plans in parallel**
+- **Manual dispatch:** Trigger from the Actions tab, select which test plan to run
 - **On demand:** Choose from `e2e-personal-loan-application`, `e2e-entity-loan-application`, or `e2e-negative-edge-cases`
 
-CI runs use Claude Code CLI (`@anthropic-ai/claude-code`) with Playwright MCP for browser automation. Reports and screenshots are committed back to the repo automatically after each run.
+Each test plan runs as an **independent job** — personal-loan, entity-loan, and negative-edge. Each produces its own report and artifact. See the inline comments in `e2e-test.yml` for a walkthrough of the pipeline.
+
+CI runs use Claude Code Action (`anthropics/claude-code-action@v1`) with Playwright MCP for browser automation. Reports are committed back to the repo on success, and always uploaded as downloadable artifacts.
 
 ### Test Data
 

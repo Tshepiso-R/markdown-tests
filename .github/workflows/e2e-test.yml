@@ -1,6 +1,11 @@
 name: E2E Loan Application Test
 
+# ─────────────────────────────────────────────────────────────
+# TRIGGERS — when this workflow runs
+# ─────────────────────────────────────────────────────────────
 on:
+  # Manual trigger — click "Run workflow" in GitHub Actions UI
+  # and pick which test plan to run from the dropdown
   workflow_dispatch:
     inputs:
       test_plan:
@@ -11,24 +16,42 @@ on:
           - e2e-personal-loan-application
           - e2e-entity-loan-application
           - e2e-negative-edge-cases
+
+  # Nightly schedule — runs every day at midnight UTC
+  # On schedule, ALL three jobs run in parallel
   schedule:
     - cron: "0 0 * * *"
 
+# ─────────────────────────────────────────────────────────────
+# JOBS — each test plan runs as a separate, independent job
+# On schedule: all 3 run in parallel
+# On manual: only the selected test plan runs
+# ─────────────────────────────────────────────────────────────
 jobs:
+
+  # =========================================================
+  # JOB 1: Personal Loan — full end-to-end happy path
+  # Lead -> Pre-screen -> Opportunity -> Consent -> Verify -> Onboard
+  # =========================================================
   personal-loan:
+    # Run on schedule (nightly) OR when manually selected
     if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-personal-loan-application'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 90          # Kill the job if it takes longer than 90 min
     permissions:
-      contents: write
+      contents: write            # Needed to commit reports back to the repo
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # --- Setup ---
+      - uses: actions/checkout@v4                  # Clone the repo
+      - uses: actions/setup-node@v4                # Install Node.js (needed for Playwright)
         with:
           node-version: "20"
       - name: Install Playwright
-        run: npx playwright install chromium --with-deps
+        run: npx playwright install chromium --with-deps   # Install headless Chrome for browser automation
+
+      # --- Generate a unique report filename ---
+      # Format: e2e-personal-loan-application-{scheduled|manual}-2026-03-20T00-00.md
       - name: Set report name
         id: report
         run: |
@@ -36,6 +59,9 @@ jobs:
           NAME="e2e-personal-loan-application-${PREFIX}-$(date +%Y-%m-%dT%H-%M)"
           echo "name=${NAME}" >> $GITHUB_OUTPUT
           echo "prefix=${PREFIX}" >> $GITHUB_OUTPUT
+
+      # --- Run the actual tests using Claude Code ---
+      # Claude reads the test plan, drives the browser, and generates a report
       - name: Run tests
         uses: anthropics/claude-code-action@v1
         with:
@@ -57,12 +83,19 @@ jobs:
             Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
             IMPORTANT: Uncheck Auto Verify before initiating. After initiate, expect "Consent Pending" not "Verification In Progress".
             CRITICAL: Only test YOUR OWN records (AutoCI${{ github.run_id }}). NEVER use another record as a substitute. If your record can't reach a step, mark it FAIL and explain why. If expected status doesn't match actual status, mark it FAIL — do NOT work around it.
+          # --max-turns 800: allow up to 800 tool calls (long test run)
+          # --model sonnet: use Sonnet for speed/cost efficiency on CI
+          # --dangerously-skip-permissions: no interactive prompts on CI
+          # --mcp-config: points to Playwright MCP server config
           claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
         env:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           RM_PASSWORD: ${{ secrets.RM_PASSWORD }}
           TESTMAIL_API_KEY: ${{ secrets.TESTMAIL_API_KEY }}
           TESTMAIL_NAMESPACE: ${{ secrets.TESTMAIL_NAMESPACE }}
+
+      # --- Post report to GitHub Actions summary tab ---
+      # Runs even if tests fail so you always see the report
       - name: Post report to summary
         if: always()
         run: |
@@ -76,12 +109,18 @@ jobs:
             echo "## No report generated" >> $GITHUB_STEP_SUMMARY
             ls -la test-reports/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
           fi
+
+      # --- Upload report as downloadable artifact ---
+      # Available on the Actions run page under "Artifacts"
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-report-personal-loan
+          name: test-report-personal-loan     # Artifact name shown in the UI
           path: test-reports/
+
+      # --- Commit report back to the repo ---
+      # Only runs if tests passed (if: success())
       - name: Commit report
         if: success()
         run: |
@@ -92,7 +131,13 @@ jobs:
           git diff --cached --quiet || git commit -m "CI: ${{ steps.report.outputs.prefix }} — personal-loan (#${{ github.run_number }})"
           git push || true
 
+  # =========================================================
+  # JOB 2: Entity Loan — Close Corporation end-to-end
+  # Lead -> Pre-screen -> Opportunity -> Directors -> Signatories
+  # -> Resolution (all directors sign) -> Consent -> Verify -> Onboard
+  # =========================================================
   entity-loan:
+    # Run on schedule (nightly) OR when manually selected
     if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-entity-loan-application'
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -113,6 +158,10 @@ jobs:
           NAME="e2e-entity-loan-application-${PREFIX}-$(date +%Y-%m-%dT%H-%M)"
           echo "name=${NAME}" >> $GITHUB_OUTPUT
           echo "prefix=${PREFIX}" >> $GITHUB_OUTPUT
+
+      # --- Run entity loan tests ---
+      # Key differences from personal: directors, signatories, resolution signing,
+      # CIPC verification instead of ID/KYC verification
       - name: Run tests
         uses: anthropics/claude-code-action@v1
         with:
@@ -169,7 +218,13 @@ jobs:
           git diff --cached --quiet || git commit -m "CI: ${{ steps.report.outputs.prefix }} — entity-loan (#${{ github.run_number }})"
           git push || true
 
+  # =========================================================
+  # JOB 3: Negative / Edge Cases
+  # Tests error handling: missing fields, invalid data, etc.
+  # No consent/email flow needed — focuses on validation errors
+  # =========================================================
   negative-edge:
+    # Run on schedule (nightly) OR when manually selected
     if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-negative-edge-cases'
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -190,6 +245,10 @@ jobs:
           NAME="e2e-negative-edge-cases-${PREFIX}-$(date +%Y-%m-%dT%H-%M)"
           echo "name=${NAME}" >> $GITHUB_OUTPUT
           echo "prefix=${PREFIX}" >> $GITHUB_OUTPUT
+
+      # --- Run negative/edge case tests ---
+      # No testmail.app needed here — these tests validate error messages,
+      # missing field handling, and boundary conditions
       - name: Run tests
         uses: anthropics/claude-code-action@v1
         with:
