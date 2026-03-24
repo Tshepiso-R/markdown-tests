@@ -12,6 +12,14 @@
 
 ---
 
+## Reports
+
+| Date | Report | Trigger | Result |
+|------|--------|---------|--------|
+| 2026-03-18 | [CI Run — 2026-03-18](../test-reports/negative-edge-cases/e2e-negative-edge-cases-ci-23266964791-2026-03-18T21-52.md) | CI | Pass |
+
+---
+
 ## User Journey Overview
 
 ```

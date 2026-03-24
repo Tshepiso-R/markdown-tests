@@ -12,6 +12,17 @@
 
 ---
 
+## Reports
+
+| Date | Report | Trigger | Result |
+|------|--------|---------|--------|
+| 2026-03-19 | [Local Run — 2026-03-19](../test-reports/entity-loan/entity-loan-2026-03-19T15-18.md) | Manual | Pass |
+| 2026-03-18 | [CI Run — 2026-03-18](../test-reports/entity-loan/e2e-entity-loan-application-ci-23264586931-2026-03-18T20-48.md) | CI | Pass |
+| 2026-03-18 | [Local Run 1 — 2026-03-18](../test-reports/entity-loan/e2e-entity-loan-run1-2026-03-18.md) | Manual | Pass |
+| 2026-03-17 | [Initial Run — 2026-03-17](../test-reports/entity-loan/opportunity-entity-edit-2026-03-17.md) | Manual | Pass |
+
+---
+
 ## User Journey Overview
 
 ```

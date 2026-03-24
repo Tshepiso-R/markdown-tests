@@ -12,6 +12,20 @@
 
 ---
 
+## Reports
+
+| Date | Report | Trigger | Result |
+|------|--------|---------|--------|
+| 2026-03-19 | [CI Nightly — 2026-03-19](../test-reports/personal-loan/e2e-personal-loan-application-ci-23276371190-2026-03-19T02-22.md) | Scheduled | Pass |
+| 2026-03-19 | [Local Run — 2026-03-19](../test-reports/personal-loan/personal-loan-2026-03-19T15-18.md) | Manual | Pass |
+| 2026-03-18 | [CI Run — 2026-03-18](../test-reports/personal-loan/e2e-personal-loan-application-ci-23260437980-2026-03-18T18-42.md) | CI | Pass |
+| 2026-03-18 | [Local Run 3 — 2026-03-18](../test-reports/personal-loan/e2e-personal-loan-run3-2026-03-18.md) | Manual | Pass |
+| 2026-03-18 | [Local Run 2 — 2026-03-18](../test-reports/personal-loan/e2e-personal-loan-run2-2026-03-18.md) | Manual | Pass |
+| 2026-03-17 | [Local Run 2 — 2026-03-17](../test-reports/personal-loan/e2e-personal-loan-run2-2026-03-17.md) | Manual | Pass |
+| 2026-03-17 | [Initial Run — 2026-03-17](../test-reports/personal-loan/workflow-end-to-end-2026-03-17.md) | Manual | Pass |
+
+---
+
 ## User Journey Overview
 
 ```
@@ -31,7 +45,6 @@ PHASE 3: Opportunity Setup (RM — Fatima)
        └─ Opportunity status: Draft
 
 PHASE 4: Initiate Loan Application (RM — Fatima)
-  └─ Uncheck Auto Verify checkbox
   └─ Click "Initiate Loan Application"
        └─ Opportunity status: Consent Pending
        └─ Consent email sent to applicant
@@ -261,12 +274,9 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
 ### TC-05: Initiate Loan Application
 - **Type:** Happy path
 - **Login:** RM (Fatima)
-- **Prereqs:** Client Info filled, Product selected, Requested Amount > 0, Auto Verify unchecked
+- **Prereqs:** Client Info filled, Product selected, Requested Amount > 0
 - **Steps:**
-  1. On opportunity page, click "Edit"
-  2. Uncheck the "Auto Verify" checkbox
-  3. Click "Save"
-  4. Click "Initiate Loan Application"
+  1. On opportunity page, click "Initiate Loan Application"
 - **Expected result:** Workflow starts, status changes to Consent Pending, consent email sent to applicant
 - **Assertions:**
   - [ ] "Loan Application submitted successfully" message
@@ -502,7 +512,7 @@ The following must be completed before "Initiate Loan Application" is enabled:
 2. At least one **Product** must be selected (via entity picker)
 3. **Requested Amount** must be greater than zero
 4. Client Info mandatory fields: Client Name, Surname, Email, Mobile, Preferred Communication, Client Classification
-5. **Auto Verify** must be unchecked (to trigger consent flow instead of auto-verification)
+5. Client Info mandatory fields: Client Classification, Country Of Residence, Citizenship, Residential Address
 
 ---
 

@@ -231,7 +231,7 @@ For EACH individual listed in verifications:
 
 ## Consent Flow — Testmail.app API
 
-> **Every loan application requires consent.** Auto Verify is for internal testing only — the real flow includes email consent + OTP.
+> **Every loan application requires consent.** The consent flow includes email consent + OTP.
 
 | Field | Value |
 |-------|-------|

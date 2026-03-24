@@ -9,23 +9,22 @@ on:
   workflow_dispatch:
     inputs:
       test_plan:
-        description: "Test plan to execute"
-        default: "e2e-personal-loan-application"
+        description: "Test plan to execute (personal + entity always run)"
+        default: "all"
         type: choice
         options:
-          - e2e-personal-loan-application
-          - e2e-entity-loan-application
+          - all
           - e2e-negative-edge-cases
 
   # Nightly schedule — runs every day at midnight UTC
-  # On schedule, ALL three jobs run in parallel
+  # On schedule, all 3 jobs run sequentially
   schedule:
     - cron: "0 0 * * *"
 
 # ─────────────────────────────────────────────────────────────
-# JOBS — each test plan runs as a separate, independent job
-# On schedule: all 3 run in parallel
-# On manual: only the selected test plan runs
+# JOBS — run sequentially: personal-loan -> entity-loan -> negative-edge
+# Personal + Entity always run (both schedule and manual)
+# Negative-edge only runs on schedule or when explicitly selected
 # ─────────────────────────────────────────────────────────────
 jobs:
 
@@ -34,8 +33,8 @@ jobs:
   # Lead -> Pre-screen -> Opportunity -> Consent -> Verify -> Onboard
   # =========================================================
   personal-loan:
-    # Run on schedule (nightly) OR when manually selected
-    if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-personal-loan-application'
+    # Always runs — on schedule AND on manual dispatch
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 90          # Kill the job if it takes longer than 90 min
     permissions:
@@ -81,7 +80,7 @@ jobs:
             IDs: 7708206169188 (Ian), 7304190225085 (Chamaine), 6311115651080 (Xolile), Reg: 2012/225386/07
             Email for lead: 5s9ku.consent-${{ github.run_id }}@inbox.testmail.app (NOT promise.raganya@boxfusion.io)
             Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
-            IMPORTANT: Uncheck Auto Verify before initiating. After initiate, expect "Consent Pending" not "Verification In Progress".
+            IMPORTANT: After initiate, expect "Consent Pending" (personal) or "Resolution Pending" (entity).
             CRITICAL: Only test YOUR OWN records (AutoCI${{ github.run_id }}). NEVER use another record as a substitute. If your record can't reach a step, mark it FAIL and explain why. If expected status doesn't match actual status, mark it FAIL — do NOT work around it.
           # --max-turns 800: allow up to 800 tool calls (long test run)
           # --model sonnet: use Sonnet for speed/cost efficiency on CI
@@ -94,33 +93,36 @@ jobs:
           TESTMAIL_API_KEY: ${{ secrets.TESTMAIL_API_KEY }}
           TESTMAIL_NAMESPACE: ${{ secrets.TESTMAIL_NAMESPACE }}
 
-      # --- Post report to GitHub Actions summary tab ---
-      # Runs even if tests fail so you always see the report
+      # --- Post report summary with link to full report ---
       - name: Post report to summary
         if: always()
         run: |
           REPORT="test-reports/${{ steps.report.outputs.name }}.md"
+          REPO_URL="https://github.com/${{ github.repository }}/blob/main"
           if [ -f "$REPORT" ]; then
-            echo "## ${{ steps.report.outputs.name }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Trigger:** ${{ steps.report.outputs.prefix }} | **Plan:** e2e-personal-loan-application" >> $GITHUB_STEP_SUMMARY
+            echo "## Personal Loan — E2E Test Report" >> $GITHUB_STEP_SUMMARY
+            echo "**Trigger:** ${{ steps.report.outputs.prefix }} | **Date:** $(date -u +%Y-%m-%d) | **Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            cat "$REPORT" >> $GITHUB_STEP_SUMMARY
+            # Extract the summary table from the report (lines between "## Summary" and next "---")
+            sed -n '/^## Summary/,/^---/p' "$REPORT" | head -20 >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Full Report" >> $GITHUB_STEP_SUMMARY
+            echo "[View Report — ${{ steps.report.outputs.name }}.md](${REPO_URL}/${REPORT})" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Test Plan" >> $GITHUB_STEP_SUMMARY
+            echo "[e2e-personal-loan-application.md](${REPO_URL}/test-plans/e2e-personal-loan-application.md)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "## No report generated" >> $GITHUB_STEP_SUMMARY
-            ls -la test-reports/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
+            echo "## Personal Loan — No report generated" >> $GITHUB_STEP_SUMMARY
+            echo "The test run did not produce a report file." >> $GITHUB_STEP_SUMMARY
           fi
 
-      # --- Upload report as downloadable artifact ---
-      # Available on the Actions run page under "Artifacts"
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-report-personal-loan     # Artifact name shown in the UI
+          name: test-report-personal-loan
           path: test-reports/
 
-      # --- Commit report back to the repo ---
-      # Only runs if tests passed (if: success())
       - name: Commit report
         if: success()
         run: |
@@ -137,8 +139,9 @@ jobs:
   # -> Resolution (all directors sign) -> Consent -> Verify -> Onboard
   # =========================================================
   entity-loan:
-    # Run on schedule (nightly) OR when manually selected
-    if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-entity-loan-application'
+    # Always runs after personal-loan completes (sequential)
+    needs: personal-loan
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -181,7 +184,7 @@ jobs:
             IDs: 7708206169188 (Ian), 7304190225085 (Chamaine), 6311115651080 (Xolile), Reg: 2012/225386/07
             Email for lead: 5s9ku.consent-${{ github.run_id }}@inbox.testmail.app (NOT promise.raganya@boxfusion.io)
             Lead name: AutoCI${{ github.run_id }}. Do NOT skip steps. Do NOT use new IDs.
-            IMPORTANT: Uncheck Auto Verify before initiating. After initiate, expect "Consent Pending" not "Verification In Progress".
+            IMPORTANT: After initiate, expect "Consent Pending" (personal) or "Resolution Pending" (entity).
             CRITICAL: Only test YOUR OWN records (AutoCI${{ github.run_id }}). NEVER use another record as a substitute. If your record can't reach a step, mark it FAIL and explain why. If expected status doesn't match actual status, mark it FAIL — do NOT work around it.
           claude_args: "--max-turns 800 --model sonnet --dangerously-skip-permissions --mcp-config .github/mcp-config.json"
         env:
@@ -193,14 +196,21 @@ jobs:
         if: always()
         run: |
           REPORT="test-reports/${{ steps.report.outputs.name }}.md"
+          REPO_URL="https://github.com/${{ github.repository }}/blob/main"
           if [ -f "$REPORT" ]; then
-            echo "## ${{ steps.report.outputs.name }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Trigger:** ${{ steps.report.outputs.prefix }} | **Plan:** e2e-entity-loan-application" >> $GITHUB_STEP_SUMMARY
+            echo "## Entity Loan — E2E Test Report" >> $GITHUB_STEP_SUMMARY
+            echo "**Trigger:** ${{ steps.report.outputs.prefix }} | **Date:** $(date -u +%Y-%m-%d) | **Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            cat "$REPORT" >> $GITHUB_STEP_SUMMARY
+            sed -n '/^## Summary/,/^---/p' "$REPORT" | head -20 >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Full Report" >> $GITHUB_STEP_SUMMARY
+            echo "[View Report — ${{ steps.report.outputs.name }}.md](${REPO_URL}/${REPORT})" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Test Plan" >> $GITHUB_STEP_SUMMARY
+            echo "[e2e-entity-loan-application.md](${REPO_URL}/test-plans/e2e-entity-loan-application.md)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "## No report generated" >> $GITHUB_STEP_SUMMARY
-            ls -la test-reports/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
+            echo "## Entity Loan — No report generated" >> $GITHUB_STEP_SUMMARY
+            echo "The test run did not produce a report file." >> $GITHUB_STEP_SUMMARY
           fi
       - name: Upload reports
         if: always()
@@ -224,7 +234,8 @@ jobs:
   # No consent/email flow needed — focuses on validation errors
   # =========================================================
   negative-edge:
-    # Run on schedule (nightly) OR when manually selected
+    # Only runs on schedule or when explicitly selected (not part of default manual run)
+    needs: entity-loan
     if: github.event_name == 'schedule' || inputs.test_plan == 'e2e-negative-edge-cases'
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -276,14 +287,21 @@ jobs:
         if: always()
         run: |
           REPORT="test-reports/${{ steps.report.outputs.name }}.md"
+          REPO_URL="https://github.com/${{ github.repository }}/blob/main"
           if [ -f "$REPORT" ]; then
-            echo "## ${{ steps.report.outputs.name }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Trigger:** ${{ steps.report.outputs.prefix }} | **Plan:** e2e-negative-edge-cases" >> $GITHUB_STEP_SUMMARY
+            echo "## Negative / Edge Cases — Test Report" >> $GITHUB_STEP_SUMMARY
+            echo "**Trigger:** ${{ steps.report.outputs.prefix }} | **Date:** $(date -u +%Y-%m-%d) | **Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            cat "$REPORT" >> $GITHUB_STEP_SUMMARY
+            sed -n '/^## Summary/,/^---/p' "$REPORT" | head -20 >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Full Report" >> $GITHUB_STEP_SUMMARY
+            echo "[View Report — ${{ steps.report.outputs.name }}.md](${REPO_URL}/${REPORT})" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Test Plan" >> $GITHUB_STEP_SUMMARY
+            echo "[e2e-negative-edge-cases.md](${REPO_URL}/test-plans/e2e-negative-edge-cases.md)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "## No report generated" >> $GITHUB_STEP_SUMMARY
-            ls -la test-reports/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
+            echo "## Negative / Edge Cases — No report generated" >> $GITHUB_STEP_SUMMARY
+            echo "The test run did not produce a report file." >> $GITHUB_STEP_SUMMARY
           fi
       - name: Upload reports
         if: always()
