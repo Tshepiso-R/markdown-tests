@@ -393,6 +393,7 @@ jobs:
 | `ANTHROPIC_API_KEY` | Claude API key |
 | `APP_PASSWORD` | Your app's test account password |
 | `AZDO_PAT` | Azure DevOps Personal Access Token (optional — for Test Plans sync) |
+| `TEAMS_WEBHOOK_URL` | Microsoft Teams Incoming Webhook URL (optional — for CI notifications) |
 
 ---
 

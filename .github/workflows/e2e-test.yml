@@ -95,6 +95,85 @@ jobs:
           name: test-report-entity-loan
           path: test-reports/
 
+      - name: Notify Teams
+        if: always()
+        run: |
+          REPORT="test-reports/${{ steps.report.outputs.name }}.md"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          DATE=$(date -u +%Y-%m-%d)
+          TRIGGER="${{ steps.report.outputs.prefix }}"
+
+          # Determine result and color
+          if [ "${{ job.status }}" = "success" ]; then
+            RESULT="PASS"
+            COLOR="00C853"
+            ICON="✅"
+          else
+            RESULT="FAIL"
+            COLOR="FF1744"
+            ICON="❌"
+          fi
+
+          # Extract summary counts from report if it exists
+          SUMMARY="No report generated"
+          if [ -f "$REPORT" ]; then
+            PASS_COUNT=$(grep -oP 'Pass\s*\|\s*\K\d+' "$REPORT" | head -1 || echo "?")
+            FAIL_COUNT=$(grep -oP 'Fail\s*\|\s*\K\d+' "$REPORT" | head -1 || echo "?")
+            TOTAL_COUNT=$(grep -oP 'Total\s*\|\s*\K\d+' "$REPORT" | head -1 || echo "?")
+            SUMMARY="${TOTAL_COUNT} total | ${PASS_COUNT} passed | ${FAIL_COUNT} failed"
+          fi
+
+          # Send Adaptive Card to Teams via webhook
+          curl -s -H "Content-Type: application/json" -d "{
+            \"type\": \"message\",
+            \"attachments\": [
+              {
+                \"contentType\": \"application/vnd.microsoft.card.adaptive\",
+                \"content\": {
+                  \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
+                  \"type\": \"AdaptiveCard\",
+                  \"version\": \"1.4\",
+                  \"body\": [
+                    {
+                      \"type\": \"Container\",
+                      \"style\": \"emphasis\",
+                      \"items\": [
+                        {
+                          \"type\": \"TextBlock\",
+                          \"text\": \"${ICON} E2E Entity Loan — ${RESULT}\",
+                          \"weight\": \"Bolder\",
+                          \"size\": \"Medium\"
+                        }
+                      ]
+                    },
+                    {
+                      \"type\": \"FactSet\",
+                      \"facts\": [
+                        { \"title\": \"Trigger\", \"value\": \"${TRIGGER}\" },
+                        { \"title\": \"Date\", \"value\": \"${DATE}\" },
+                        { \"title\": \"Result\", \"value\": \"${RESULT}\" },
+                        { \"title\": \"Summary\", \"value\": \"${SUMMARY}\" },
+                        { \"title\": \"Run\", \"value\": \"#${{ github.run_number }}\" }
+                      ]
+                    }
+                  ],
+                  \"actions\": [
+                    {
+                      \"type\": \"Action.OpenUrl\",
+                      \"title\": \"View Run\",
+                      \"url\": \"${RUN_URL}\"
+                    },
+                    {
+                      \"type\": \"Action.OpenUrl\",
+                      \"title\": \"View Report\",
+                      \"url\": \"https://github.com/${{ github.repository }}/blob/main/${REPORT}\"
+                    }
+                  ]
+                }
+              }
+            ]
+          }" "${{ secrets.TEAMS_WEBHOOK_URL }}" || echo "Teams notification failed (webhook not configured)"
+
       - name: Commit report
         if: success()
         run: |

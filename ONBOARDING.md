@@ -197,6 +197,38 @@ These IDs are shared across all test plans. **Never generate new ones** — each
 | `RM_PASSWORD` | GitHub Secrets | RM (Fatima) account password |
 | `TESTMAIL_API_KEY` | GitHub Secrets | Testmail.app API key for consent/OTP emails |
 | `AZDO_PAT` | GitHub Secrets + local env | Azure DevOps PAT for Test Plans sync |
+| `TEAMS_WEBHOOK_URL` | GitHub Secrets | Microsoft Teams Incoming Webhook for CI notifications |
+
+---
+
+## Teams Notifications
+
+After every CI run (pass or fail), a notification is posted to Microsoft Teams with the result, summary counts, and links to the run and report.
+
+### How to Set Up the Webhook
+
+1. In Microsoft Teams, go to the channel where you want notifications
+2. Click the **...** menu on the channel → **Connectors** (or **Manage channel** → **Connectors**)
+3. Find **Incoming Webhook** → click **Configure**
+4. Give it a name (e.g., "E2E Test Results") and optionally upload an icon
+5. Click **Create** → copy the webhook URL
+6. Add it as a GitHub Secret:
+   - Go to your repo → **Settings** → **Secrets and variables** → **Actions**
+   - Click **New repository secret**
+   - Name: `TEAMS_WEBHOOK_URL`
+   - Value: paste the webhook URL
+7. Done — next CI run will post to your channel
+
+### What the Notification Looks Like
+
+The card shows:
+- **Result:** PASS or FAIL (with icon)
+- **Trigger:** scheduled or manual
+- **Date:** when it ran
+- **Summary:** X total | Y passed | Z failed
+- **Buttons:** "View Run" (GitHub Actions) and "View Report" (markdown report)
+
+If the webhook secret is not configured, the step silently skips — it won't break the pipeline.
 
 ---
 
