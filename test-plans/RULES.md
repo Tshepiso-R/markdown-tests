@@ -33,6 +33,7 @@ These rules govern how Claude should execute markdown test plans.
 - Snapshot before clicking to confirm the target is visible
 - Snapshot after clicking to verify the outcome
 - If a dialog/modal appears, handle it and note it in the report
+- **Every click has a consequence** — note what happened (dialog opened, toast appeared, page redirected, form switched to edit/read-only mode)
 
 ### Waiting
 - Never use arbitrary delays
@@ -115,7 +116,7 @@ Each TC section must include:
 
 ---
 
-## After Testing
+## After Testing — Report & Drift Detection
 
 1. Fill in the **Report Structure** section from the test plan
 2. Save the report to `test-reports/[module]/[module]-YYYY-MM-DDTHH-MM.md`
@@ -124,7 +125,12 @@ Each TC section must include:
    - Report file has the datetime stamp (e.g. `personal-loan-2026-03-19T15-18.md`)
    - Screenshots go in `test-reports/screenshots/[module]/` — one subfolder per test plan
 4. Summarize: total pass/fail/skip, top issues, and recommendations
-5. If any test plan steps are outdated (UI changed), note what needs updating
+5. **Run drift detection** — compare the report against the source test plan:
+   1. Read `azdo-sync/DRIFT-PLAYBOOK.md`
+   2. For each test case, compare expected (plan) vs actual (report)
+   3. If any discrepancies found, add a "Changes Detected" section to the report
+   4. Include "Suggested Updates" with exact edits the user should review
+   5. Do NOT auto-apply changes to the test plan — always wait for user review
 
 ---
 

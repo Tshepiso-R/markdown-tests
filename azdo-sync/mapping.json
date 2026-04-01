@@ -1,0 +1,53 @@
+{
+  "plans": {
+    "e2e-personal-loan-application": {
+      "file": "test-plans/e2e-personal-loan-application.md",
+      "azdoPlanId": 99203,
+      "azdoPlanUrl": "https://dev.azure.com/boxfusion/markdown-test/_testPlans/execute?planId=99203",
+      "rootSuiteId": 99204,
+      "lastSyncDate": "2026-04-01T09:05:00Z",
+      "suites": {
+        "PHASE 1: Lead Capture": {
+          "azdoSuiteId": 99206,
+          "testCases": {
+            "TC-01": { "azdoWorkItemId": 99212, "title": "Create Individual lead" }
+          }
+        },
+        "PHASE 2: Pre-Screening": {
+          "azdoSuiteId": 99207,
+          "testCases": {
+            "TC-02": { "azdoWorkItemId": 99214, "title": "Initiate Pre-Screening — all criteria pass" }
+          }
+        },
+        "PHASE 3: Opportunity Setup": {
+          "azdoSuiteId": 99208,
+          "testCases": {
+            "TC-03": { "azdoWorkItemId": 99215, "title": "Edit Client Info — fill all mandatory fields except marital regime" },
+            "TC-04": { "azdoWorkItemId": 99216, "title": "Fill Loan Info — Products, Amount, Purpose (required for workflow)" }
+          }
+        },
+        "PHASE 4: Initiate Loan Application": {
+          "azdoSuiteId": 99209,
+          "testCases": {
+            "TC-05": { "azdoWorkItemId": 99217, "title": "Initiate Loan Application" },
+            "TC-05a": { "azdoWorkItemId": 99218, "title": "Initiate without Requested Amount (negative)" },
+            "TC-05b": { "azdoWorkItemId": 99219, "title": "Initiate without Product (negative)" },
+            "TC-05c": { "azdoWorkItemId": 99220, "title": "Upload Individual Consent" }
+          }
+        },
+        "PHASE 5: Confirm Verification Outcomes": {
+          "azdoSuiteId": 99210,
+          "testCases": {
+            "TC-06": { "azdoWorkItemId": 99221, "title": "Review and finalise verification" }
+          }
+        },
+        "PHASE 6: Complete Onboarding Checklist": {
+          "azdoSuiteId": 99211,
+          "testCases": {
+            "TC-07": { "azdoWorkItemId": 99222, "title": "Fill and submit pre-onboarding checklist" }
+          }
+        }
+      }
+    }
+  }
+}

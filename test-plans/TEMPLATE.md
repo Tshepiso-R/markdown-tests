@@ -39,6 +39,19 @@
 
 ---
 
+## Azure DevOps
+
+| Field | Value |
+|-------|-------|
+| AzDO Plan ID | _(populated after sync)_ |
+| AzDO Plan URL | _(populated after sync)_ |
+| Last synced | _(populated after sync)_ |
+
+> To sync this test plan to Azure DevOps Test Plans, run: "Sync this test plan to Azure DevOps"
+> See `azdo-sync/SYNC-PLAYBOOK.md` for details.
+
+---
+
 ## User Journey Overview
 
 ```

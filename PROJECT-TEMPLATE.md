@@ -68,6 +68,10 @@ your-project/
 │   └── e2e-[scenario].md         ← One per user journey
 ├── test-reports/
 │   └── [scenario]-[date].md      ← Generated after each run
+├── azdo-sync/
+│   ├── SYNC-PLAYBOOK.md          ← Instructions for syncing to Azure DevOps
+│   ├── DRIFT-PLAYBOOK.md         ← Instructions for drift detection
+│   └── mapping.json              ← ID mapping: markdown ↔ AzDO work items
 ├── CLAUDE.md                     ← Project instructions for Claude
 └── .gitignore
 ```
@@ -103,8 +107,14 @@ When asked to run a test plan:
 - Never hardcode credentials — use env variables
 - On failure: screenshot, note what happened, continue to next test case
 - Every assertion must be explicitly checked and marked pass/fail
+- Every step must have an expected result — never leave it blank
+- Every test case must list its prerequisites
 - Reuse existing test data — don't create new records unless required
 - NEVER generate Playwright, Cypress, Selenium, or any test framework code
+
+## Azure DevOps Sync
+Test plans can be synced to Azure DevOps Test Plans. See `azdo-sync/SYNC-PLAYBOOK.md`.
+After every test run, drift detection compares results against the plan. See `azdo-sync/DRIFT-PLAYBOOK.md`.
 ```
 
 ---
@@ -134,6 +144,7 @@ When asked to run a test plan:
 ### Clicking / Submitting
 - Snapshot before clicking to confirm the target is visible
 - Snapshot after clicking to verify the outcome
+- Every click has a consequence — note what happened (dialog opened, toast appeared, page redirected)
 
 ## Assertions
 - Mark each assertion: `[x]` for pass, `[!]` for fail
@@ -160,6 +171,8 @@ When asked to run a test plan:
 ## After Testing
 1. Save report to `test-reports/[module]-YYYY-MM-DDTHH-MM.md`
 2. Summarize: total pass/fail/skip, issues, recommendations
+3. Run drift detection — compare report against test plan (see azdo-sync/DRIFT-PLAYBOOK.md)
+4. If changes detected, add "Changes Detected" section to report with suggested updates
 
 ## What NOT to Do
 - Do NOT hardcode credentials in reports
@@ -216,12 +229,13 @@ When asked to run a test plan:
 ## TC-01: [Happy path description]
 - **Type:** Happy path
 - **Login:** [account]
+- **Prerequisites:** None — first step in the journey
 - **URL:** [starting page]
 - **Steps:**
-  1. Navigate to [page]
-  2. Click [button]
-  3. Fill [field] with [value]
-  4. Click [submit]
+  1. Navigate to [page] → _Page loads with [expected content]_
+  2. Click [button] → _[Dialog opens / form loads / toast appears]_
+  3. Fill [field] with [value] → _Field accepts value_
+  4. Click [submit] → _[Dialog closes / form saves / page redirects]_
 - **Input data:**
   | Field | Value | Type |
   |-------|-------|------|
@@ -231,24 +245,29 @@ When asked to run a test plan:
   - [ ] [Thing to verify]
   - [ ] [Another thing]
 
+> **Rule:** Every step must describe what should happen after the action. Never leave expected results blank — if clicking a button closes a dialog, say "Dialog closes". If clicking Save shows a toast, say what the toast should say.
+
 ---
 
 ## TC-02: [Negative test description]
 - **Type:** Negative
+- **Prerequisites:** TC-01 passed — [record] exists with status "[status]"
 - **Steps:**
   1. Leave [required field] empty
-  2. Click submit
+  2. Click submit → _System blocks submission and shows error_
 - **Expected result:** Validation error shown
 - **Assertions:**
-  - [ ] Error message visible
+  - [ ] Error message: "[exact error text]"
   - [ ] Record NOT created
+  - [ ] Status remains unchanged
 
 ---
 
 ## TC-03: [Edge case description]
 - **Type:** Edge case
+- **Prerequisites:** [What state/data must exist before this test case]
 - **Steps:**
-  1. [Unusual action]
+  1. [Unusual action] → _[What should happen]_
 - **Expected result:** [Expected behavior]
 - **Assertions:**
   - [ ] [Verification]
@@ -373,10 +392,27 @@ jobs:
 |--------|-------------|
 | `ANTHROPIC_API_KEY` | Claude API key |
 | `APP_PASSWORD` | Your app's test account password |
+| `AZDO_PAT` | Azure DevOps Personal Access Token (optional — for Test Plans sync) |
 
 ---
 
-## 9. Setup Checklist
+## 9. Azure DevOps Integration (Optional)
+
+If your team uses Azure DevOps Test Plans for test management:
+
+1. **Create a PAT** in Azure DevOps with these scopes:
+   - Test Management: Read & Write
+   - Work Items: Read & Write
+2. **Add `AZDO_PAT`** to your GitHub Secrets (for CI) and/or set as a local environment variable
+3. **Configure your org/project** in `azdo-sync/SYNC-PLAYBOOK.md` — update the Configuration table at the top
+4. **Sync a test plan:** Ask Claude "Sync test-plans/[your-plan].md to Azure DevOps"
+5. **Drift detection** runs automatically after every test execution — see reports for "Changes Detected" section
+
+The mapping between markdown test cases and AzDO work items is stored in `azdo-sync/mapping.json`.
+
+---
+
+## 10. Setup Checklist
 
 - [ ] Copy project structure
 - [ ] Update CLAUDE.md with your app details
@@ -387,6 +423,7 @@ jobs:
 - [ ] Set secrets in repo settings
 - [ ] Enable GitHub Pages (Settings > Pages > Source: GitHub Actions)
 - [ ] Run first test: Actions > Run workflow
+- [ ] (Optional) Set up Azure DevOps integration — see section 9
 
 ---
 

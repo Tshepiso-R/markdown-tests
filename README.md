@@ -28,16 +28,13 @@ markdown-tests/
     e2e-negative-edge-cases.md       # Negative/edge case scenarios
   test-reports/
     personal-loan/                   # Personal loan run reports
-      personal-loan-YYYY-MM-DDTHH-MM.md
-      ...
     entity-loan/                     # Entity loan run reports
-      entity-loan-YYYY-MM-DDTHH-MM.md
-      ...
     negative-edge-cases/             # Negative test run reports
-    screenshots/
-      personal-loan/                 # Screenshots from personal loan runs
-      entity-loan/                   # Screenshots from entity loan runs
-      negative-edge-cases/           # Screenshots from negative test runs
+    screenshots/                     # Screenshots organized by module
+  azdo-sync/
+    SYNC-PLAYBOOK.md                 # Instructions for syncing to Azure DevOps Test Plans
+    DRIFT-PLAYBOOK.md                # Instructions for detecting UI/behavior changes
+    mapping.json                     # ID mapping: markdown test cases ↔ AzDO work items
 ```
 
 ---
@@ -170,6 +167,45 @@ test-reports/screenshots/[module]/tc01-description.png
 ```
 
 Each report includes: summary table, per-TC steps followed, assertions with pass/fail checkboxes, URLs, and flagged issues.
+
+---
+
+## Azure DevOps Integration
+
+Test plans are synced to **Azure DevOps Test Plans** for centralized test management.
+
+### How It Works
+
+1. Markdown test plans are the **source of truth**
+2. Claude syncs them to AzDO via REST API — each PHASE becomes a Test Suite, each TC becomes a Test Case with steps and expected results
+3. After every test run, **drift detection** compares actual behavior against the test plan and flags changes (renamed buttons, changed toasts, removed fields, etc.)
+4. Drift is reported as "Changes Detected" in the report with suggested updates — never auto-applied
+
+### Mapping
+
+| Markdown | Azure DevOps |
+|----------|-------------|
+| 1 `.md` file | 1 Test Plan |
+| `## PHASE N: Name` | 1 Test Suite |
+| `### TC-XX: Description` | 1 Test Case (with steps + expected results) |
+
+### Commands
+
+- **Sync:** "Sync test-plans/[plan].md to Azure DevOps"
+- **Re-sync after changes:** "Re-sync [plan] to Azure DevOps" (updates only changed items)
+- **Drift detection:** Runs automatically after every test execution
+
+### Files
+
+- `azdo-sync/SYNC-PLAYBOOK.md` — Step-by-step sync instructions
+- `azdo-sync/DRIFT-PLAYBOOK.md` — Drift detection rules and report format
+- `azdo-sync/mapping.json` — ID mapping between markdown and AzDO work items
+
+### Required Secret
+
+| Secret | Description |
+|--------|-------------|
+| `AZDO_PAT` | Azure DevOps Personal Access Token with Test Management + Work Items read/write scope |
 
 ---
 

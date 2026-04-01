@@ -21,6 +21,10 @@ test-plans/
   e2e-[scenario].md        ← one test plan per end-to-end user journey
 test-reports/
   [scenario]-YYYY-MM-DD.md ← generated after each run
+azdo-sync/
+  SYNC-PLAYBOOK.md         ← instructions for syncing test plans to Azure DevOps
+  DRIFT-PLAYBOOK.md        ← instructions for detecting changes after test runs
+  mapping.json             ← ID mapping between markdown test cases and AzDO work items
 ```
 
 ---
@@ -40,7 +44,9 @@ When asked to run a test plan:
 
 1. Copy `test-plans/TEMPLATE.md`
 2. Fill in Meta, Flow, Test Cases, and any module-specific Rules
-3. Each test case must have: type, steps, expected result, and assertions
+3. Each test case must have: type, prerequisites, steps, expected result, and assertions
+4. Every step must describe what should happen — never leave expected results blank
+5. Every test case must list its prerequisites (which prior TCs must pass, what state is needed)
 
 ---
 
@@ -51,3 +57,28 @@ When asked to run a test plan:
 - On failure: screenshot, note what happened, continue to next test case
 - Every assertion must be explicitly checked and marked pass/fail
 - Reuse existing test data — don't create new records unless required
+
+---
+
+## Azure DevOps Sync
+
+Test plans are synced to Azure DevOps Test Plans for centralized test management. Each PHASE becomes a Test Suite, each TC becomes a Test Case with action steps, expected results, and validation steps.
+
+- **Sync instructions:** Read `azdo-sync/SYNC-PLAYBOOK.md`
+- **Drift detection:** Read `azdo-sync/DRIFT-PLAYBOOK.md`
+- **Mapping file:** `azdo-sync/mapping.json` — stores the IDs linking markdown to AzDO
+- **Required secret:** `AZDO_PAT` environment variable (Azure DevOps Personal Access Token)
+
+### Commands
+
+- **Sync a plan:** "Sync test-plans/[plan].md to Azure DevOps"
+- **Re-sync after updates:** "Re-sync [plan] to Azure DevOps" (PATCHes only changed items)
+- **Drift detection:** Runs automatically after every test run (see RULES.md)
+
+### AzDO Test Case Format
+
+When syncing, every step (action or validation) must have an expected result:
+- **Action steps:** Describe what should happen — dialog opens, form loads, toast appears, page redirects
+- **Validation steps:** Describe the expected state — specific toast text, status badge value, field content
+- **Never leave expected results blank** — if clicking OK closes a dialog, say "Dialog closes"
+- **Prerequisites** are included in the test case description — which prior TCs must pass and what state is required
