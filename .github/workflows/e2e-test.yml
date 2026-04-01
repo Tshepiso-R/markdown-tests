@@ -167,6 +167,11 @@ jobs:
                       \"type\": \"Action.OpenUrl\",
                       \"title\": \"View Report\",
                       \"url\": \"https://github.com/${{ github.repository }}/blob/main/${REPORT}\"
+                    },
+                    {
+                      \"type\": \"Action.OpenUrl\",
+                      \"title\": \"AzDO Test Plan\",
+                      \"url\": \"https://dev.azure.com/boxfusion/markdown-test/_testPlans/execute?planId=99224\"
                     }
                   ]
                 }
