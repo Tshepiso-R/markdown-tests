@@ -200,6 +200,119 @@ These IDs are shared across all test plans. **Never generate new ones** — each
 
 ---
 
+## Azure DevOps Personal Access Token (PAT)
+
+A PAT is needed to sync test plans to Azure DevOps. Each team member who wants to run syncs locally needs their own.
+
+### How to Create a PAT
+
+1. Go to **Azure DevOps** → click your profile icon (top right) → **Personal access tokens**
+   - Or navigate directly to: `https://dev.azure.com/boxfusion/_usersSettings/tokens`
+2. Click **+ New Token**
+3. Configure:
+   - **Name:** Something descriptive (e.g., "Markdown Test Sync")
+   - **Organization:** `boxfusion`
+   - **Expiration:** Choose a duration (max 1 year)
+   - **Scopes:** Select **Custom defined**, then enable:
+     - **Test Management** → Read & Write
+     - **Work Items** → Read & Write
+4. Click **Create** and **copy the token immediately** — you won't see it again
+5. Set it as an environment variable locally:
+   ```bash
+   export AZDO_PAT="your-token-here"
+   ```
+   Or on Windows (PowerShell):
+   ```powershell
+   $env:AZDO_PAT = "your-token-here"
+   ```
+
+### For CI
+
+The PAT is stored as a GitHub Secret (`AZDO_PAT`). Only repo admins can update it. If the token expires, CI syncs will fail — regenerate and update the secret.
+
+---
+
+## Testmail.app — How It Works
+
+The loan application workflow sends emails for **consent** and **OTP verification**. We can't use real email inboxes because Claude needs to programmatically read these emails during test runs. Testmail.app solves this.
+
+### What Is It
+
+Testmail.app provides disposable email inboxes that can be queried via API. Every email sent to `5s9ku.[anything]@inbox.testmail.app` lands in our namespace and can be retrieved by tag.
+
+### How the Email Address Works
+
+```
+5s9ku.consent-1234567890@inbox.testmail.app
+│     │       │
+│     │       └─ Unique identifier (timestamp or run ID)
+│     └─ Tag — used to filter emails in the API
+└─ Namespace — our testmail.app account
+```
+
+- The **namespace** (`5s9ku`) is fixed — it's our account
+- The **tag** is everything between the dot and the `@` — used to isolate emails per test run
+- Each test run uses a **unique tag** (e.g., `consent-1712000000`) so emails from different runs don't collide
+
+### When Emails Are Sent
+
+| Trigger | Email Subject | Sent To |
+|---------|--------------|---------|
+| Initiate Loan (Personal) | "Action Required: Provide Consent" | Lead's email address |
+| Initiate Loan (Entity) | "Action Required: Company Resolution Needed" | Each director's email |
+| After all directors sign resolution | "Action Required: Provide Consent" | Contact Person's email |
+| Click "Request OTP" on consent/resolution page | "One-Time-Pin" | Same address |
+
+### How Claude Retrieves Emails
+
+Claude calls the testmail.app API to check for incoming emails:
+
+```
+GET https://api.testmail.app/api/json
+  ?apikey={TESTMAIL_API_KEY}
+  &namespace=5s9ku
+  &tag={tag}
+  &livequery=true
+  &timeout=60000
+```
+
+- **`livequery=true`** — waits for the email to arrive (long-polling, up to 60 seconds)
+- **`tag`** — filters to only emails for this test run
+- **`timeout=60000`** — waits up to 60 seconds before giving up
+
+The response includes the email body as HTML. Claude extracts:
+- **Consent/resolution URL** — the link the applicant/director clicks to sign
+- **OTP code** — extracted with regex: `Your One-Time-Pin is (\d+)`
+
+### Example Flow (Personal Loan Consent)
+
+1. Claude initiates the loan → app sends consent email to `5s9ku.consent-run123@inbox.testmail.app`
+2. Claude calls testmail.app API with `tag=consent-run123`
+3. API returns the email → Claude extracts the consent URL
+4. Claude opens the URL in the browser → clicks "Request OTP"
+5. App sends OTP email to the same address
+6. Claude calls API again (with `timestamp_from` to get only new emails) → extracts OTP
+7. Claude enters OTP → signs consent → done
+
+### Why Not Real Emails
+
+- Personal/company inboxes can't be queried via API
+- Shared inboxes would mix emails from different test runs
+- Testmail.app isolates emails by tag — each run sees only its own emails
+- It's free for our usage volume
+
+### Account Details
+
+| Field | Value |
+|-------|-------|
+| Service | testmail.app |
+| Namespace | `5s9ku` |
+| API Key | Stored in GitHub Secrets as `TESTMAIL_API_KEY` |
+| Email format | `5s9ku.{tag}@inbox.testmail.app` |
+| Dashboard | Log in at testmail.app to see all received emails |
+
+---
+
 ## How to Contribute
 
 ### Adding a Test Case to an Existing Plan
