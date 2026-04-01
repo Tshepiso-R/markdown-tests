@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flaky Tests — Test Suite Dashboard</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-brand">Test Suite Dashboard</a>
+  <div class="nav-links">
+    <a href="quality.html" class="">Report Completeness</a><a href="cost.html" class="">Cost Report</a><a href="duration.html" class="">Duration Tracker</a><a href="failures.html" class="">Failure Heatmap</a><a href="flaky.html" class="active">Flaky Tests</a><a href="drift.html" class="">Drift History</a><a href="coverage.html" class="">Coverage Gaps</a><a href="stale.html" class="">Stale Plans</a>
+  </div>
+</nav>
+<main>
+<h1>Flaky Test Monitor</h1>
+<p><strong>Generated:</strong> 2026-04-01T13:30</p>
+<hr>
+<h2>Summary</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Category</th>
+<th>Count</th>
+</tr></thead><tbody>
+<tr>
+<td>Flaky (mixed pass/fail)</td>
+<td><strong>0</strong></td>
+</tr>
+<tr>
+<td>Always Pass</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Always Fail</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Insufficient Data (&lt;2 runs)</td>
+<td>8</td>
+</tr>
+<tr>
+<td><strong>Total Tracked</strong></td>
+<td><strong>20</strong></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2>Flaky Tests</h2>
+<p>No flaky tests detected. All tests with 2+ runs are consistent.</p>
+<hr>
+<h2>Always Passing</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Test Case</th>
+<th>Name</th>
+<th>Runs</th>
+</tr></thead><tbody>
+<tr>
+<td>entity-loan/TC-01</td>
+<td>Create Lead</td>
+<td>2</td>
+</tr>
+<tr>
+<td>entity-loan/TC-02</td>
+<td>Create Opportunity</td>
+<td>2</td>
+</tr>
+<tr>
+<td>entity-loan/TC-03</td>
+<td>Create Application</td>
+<td>2</td>
+</tr>
+<tr>
+<td>entity-loan/TC-04</td>
+<td>Add Application Details</td>
+<td>2</td>
+</tr>
+<tr>
+<td>entity-loan/TC-05</td>
+<td>Initiate Loan Application</td>
+<td>2</td>
+</tr>
+<tr>
+<td>personal-loan/TC-01</td>
+<td>Create Lead</td>
+<td>2</td>
+</tr>
+<tr>
+<td>personal-loan/TC-02</td>
+<td>Pre-Screening</td>
+<td>2</td>
+</tr>
+<tr>
+<td>personal-loan/TC-03</td>
+<td>Client Info</td>
+<td>2</td>
+</tr>
+<tr>
+<td>personal-loan/TC-04</td>
+<td>Loan Info</td>
+<td>2</td>
+</tr>
+<tr>
+<td>personal-loan/TC-05</td>
+<td>Initiate Loan Application</td>
+<td>2</td>
+</tr>
+<tr>
+<td>personal-loan/TC-06</td>
+<td>Verify &amp; Finalise Verification Outcomes</td>
+<td>2</td>
+</tr>
+<tr>
+<td>personal-loan/TC-07</td>
+<td>Complete Onboarding Checklist</td>
+<td>2</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2>Insufficient Data</h2>
+<blockquote>
+<p>These tests have fewer than 2 definitive runs. Need more data to determine stability.</p>
+</blockquote>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Test Case</th>
+<th>Name</th>
+<th>Runs</th>
+</tr></thead><tbody>
+<tr>
+<td>entity-loan/TC-03a</td>
+<td>Add Directors</td>
+<td>1</td>
+</tr>
+<tr>
+<td>entity-loan/TC-03b</td>
+<td>Add Signatories</td>
+<td>1</td>
+</tr>
+<tr>
+<td>entity-loan/TC-05c</td>
+<td>Upload Entity Consent</td>
+<td>0</td>
+</tr>
+<tr>
+<td>entity-loan/TC-06</td>
+<td>Confirm Verification Outcomes</td>
+<td>1</td>
+</tr>
+<tr>
+<td>entity-loan/TC-07</td>
+<td>Complete Onboarding Checklist</td>
+<td>1</td>
+</tr>
+<tr>
+<td>personal-loan/TC-05a</td>
+<td>Negative: Initiate without amount</td>
+<td>1</td>
+</tr>
+<tr>
+<td>personal-loan/TC-05b</td>
+<td>Negative: Initiate without product</td>
+<td>1</td>
+</tr>
+<tr>
+<td>personal-loan/TC-05c</td>
+<td>Upload Individual Consent</td>
+<td>1</td>
+</tr>
+</tbody></table></div>
+</main>
+<footer>
+  <p>Generated 2026-04-01 14:48 &mdash; <a href="https://github.com/Tshepiso-R/markdown-tests">markdown-tests</a></p>
+</footer>
+</body>
+</html>

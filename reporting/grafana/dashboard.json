@@ -1,0 +1,191 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Pass Rate Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": true
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "jsonpath",
+          "jsonPath": "$[*]",
+          "fields": [
+            { "jsonPath": "$[*].date", "name": "Time", "type": "time" },
+            { "jsonPath": "$[*].pass_rate", "name": "Pass Rate (%)", "type": "number" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Test Results by Run",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Pass" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Fail" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Skip" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "stacking": { "mode": "normal" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "jsonpath",
+          "fields": [
+            { "jsonPath": "$[*].title", "name": "Run" },
+            { "jsonPath": "$[*].pass", "name": "Pass", "type": "number" },
+            { "jsonPath": "$[*].fail", "name": "Fail", "type": "number" },
+            { "jsonPath": "$[*].skip", "name": "Skip", "type": "number" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Latest Run Summary",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 90 }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["last"] }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "jsonpath",
+          "fields": [
+            { "jsonPath": "$[-1:].pass_rate", "name": "Pass Rate", "type": "number" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Total Tests Run",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 8 },
+      "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "blue" } } },
+      "options": {
+        "colorMode": "background",
+        "reduceOptions": { "calcs": ["sum"] }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "jsonpath",
+          "fields": [
+            { "jsonPath": "$[*].total", "name": "Total Tests", "type": "number" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Issues Found",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "options": { "showHeader": true },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "jsonpath",
+          "fields": [
+            { "jsonPath": "$[*].date", "name": "Date" },
+            { "jsonPath": "$[*].module", "name": "Module" },
+            { "jsonPath": "$[*].issues", "name": "Issues" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Pass Rate by Module",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 12 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "right" },
+        "pieType": "donut"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "jsonpath",
+          "fields": [
+            { "jsonPath": "$[*].module", "name": "Module" },
+            { "jsonPath": "$[*].pass_rate", "name": "Pass Rate", "type": "number" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Test Case Results (All Runs)",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 12 },
+      "options": { "showHeader": true },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "jsonpath",
+          "fields": [
+            { "jsonPath": "$[*].date", "name": "Date" },
+            { "jsonPath": "$[*].module", "name": "Module" },
+            { "jsonPath": "$[*].pass", "name": "Pass", "type": "number" },
+            { "jsonPath": "$[*].fail", "name": "Fail", "type": "number" },
+            { "jsonPath": "$[*].pass_rate", "name": "Rate (%)", "type": "number" }
+          ]
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["testing", "qa", "markdown-tests"],
+  "templating": { "list": [] },
+  "time": { "from": "now-30d", "to": "now" },
+  "title": "Markdown Test Suite Dashboard",
+  "uid": "markdown-test-dashboard"
+}

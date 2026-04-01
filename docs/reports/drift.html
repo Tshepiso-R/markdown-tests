@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drift History — Test Suite Dashboard</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-brand">Test Suite Dashboard</a>
+  <div class="nav-links">
+    <a href="quality.html" class="">Report Completeness</a><a href="cost.html" class="">Cost Report</a><a href="duration.html" class="">Duration Tracker</a><a href="failures.html" class="">Failure Heatmap</a><a href="flaky.html" class="">Flaky Tests</a><a href="drift.html" class="active">Drift History</a><a href="coverage.html" class="">Coverage Gaps</a><a href="stale.html" class="">Stale Plans</a>
+  </div>
+</nav>
+<main>
+<h1>Drift History Log</h1>
+<p><strong>Generated:</strong> 2026-04-01T13:41</p>
+<blockquote>
+<p>Correlates test plan changes (git history) with test run results to identify</p>
+<p>whether plan edits coincide with test failures or regressions.</p>
+</blockquote>
+<hr>
+<h2>Timeline</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Date</th>
+<th>Event</th>
+<th>Source</th>
+<th>Detail</th>
+</tr></thead><tbody>
+<tr>
+<td>2026-03-17</td>
+<td>PLAN EDIT</td>
+<td>e2e-entity-loan-application.md</td>
+<td>Initial commit: E2E Playwright tests for LandBank CRM <code>8e8965cb</code></td>
+</tr>
+<tr>
+<td>2026-03-17</td>
+<td>PLAN EDIT</td>
+<td>e2e-personal-loan-application.md</td>
+<td>Initial commit: E2E Playwright tests for LandBank CRM <code>8e8965cb</code></td>
+</tr>
+<tr>
+<td>2026-03-17</td>
+<td>TEST RUN</td>
+<td>entity-loan</td>
+<td>PASS — opportunity-entity-edit-2026-03-17.md</td>
+</tr>
+<tr>
+<td>2026-03-17</td>
+<td>TEST RUN</td>
+<td>personal-loan</td>
+<td>PASS — e2e-personal-loan-run2-2026-03-17.md</td>
+</tr>
+<tr>
+<td>2026-03-17</td>
+<td>TEST RUN</td>
+<td>personal-loan</td>
+<td>PASS — workflow-end-to-end-2026-03-17.md</td>
+</tr>
+<tr>
+<td>2026-03-18</td>
+<td>PLAN EDIT</td>
+<td>e2e-entity-loan-application.md</td>
+<td>Add E2E Entity (Close Corporation) loan test plan, report, and CI support <code>165f585b</code></td>
+</tr>
+<tr>
+<td>2026-03-18</td>
+<td>PLAN EDIT</td>
+<td>e2e-negative-edge-cases.md</td>
+<td>Add negative/edge case test plan, upgrade dashboard with assertions <code>e286676a</code></td>
+</tr>
+<tr>
+<td>2026-03-18</td>
+<td>TEST RUN</td>
+<td>entity-loan</td>
+<td>PASS — e2e-entity-loan-application-ci-23264586931-2026-03-18T20-48.md</td>
+</tr>
+<tr>
+<td>2026-03-18</td>
+<td>TEST RUN</td>
+<td>entity-loan</td>
+<td>PASS — e2e-entity-loan-run1-2026-03-18.md</td>
+</tr>
+<tr>
+<td>2026-03-18</td>
+<td>TEST RUN</td>
+<td>personal-loan</td>
+<td>PASS — e2e-personal-loan-run2-2026-03-18.md</td>
+</tr>
+<tr>
+<td>2026-03-18</td>
+<td>TEST RUN</td>
+<td>personal-loan</td>
+<td>PASS — e2e-personal-loan-run3-2026-03-18.md</td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td>PLAN EDIT</td>
+<td>e2e-entity-loan-application.md</td>
+<td>Assert spouse appears in verification when married in community of property <code>94e9c337</code></td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td>PLAN EDIT</td>
+<td>e2e-entity-loan-application.md</td>
+<td>Update entity test plan: resolution flow, testmail for all directors <code>61b8a6d2</code></td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td>PLAN EDIT</td>
+<td>e2e-entity-loan-application.md</td>
+<td>Rewrite TC-06: per-individual verification with full assertions <code>774e30dd</code></td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td>PLAN EDIT</td>
+<td>e2e-entity-loan-application.md</td>
+<td>Add consent flow (TC-05c) with testmail.app for email/OTP verification <code>8c04c265</code></td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td>PLAN EDIT</td>
+<td>e2e-personal-loan-application.md</td>
+<td>Assert spouse appears in verification when married in community of property <code>94e9c337</code></td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td>PLAN EDIT</td>
+<td>e2e-personal-loan-application.md</td>
+<td>Rewrite TC-06: per-individual verification with full assertions <code>774e30dd</code></td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td>PLAN EDIT</td>
+<td>e2e-personal-loan-application.md</td>
+<td>Add consent flow (TC-05c) with testmail.app for email/OTP verification <code>8c04c265</code></td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td>TEST RUN</td>
+<td>entity-loan</td>
+<td>PASS — entity-loan-2026-03-19T15-18.md</td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td>TEST RUN</td>
+<td>personal-loan</td>
+<td>PASS — e2e-personal-loan-application-ci-23276371190-2026-03-19T02-22.md</td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td>TEST RUN</td>
+<td>personal-loan</td>
+<td>PASS — personal-loan-2026-03-19T15-18.md</td>
+</tr>
+<tr>
+<td>2026-03-24</td>
+<td>PLAN EDIT</td>
+<td>e2e-entity-loan-application.md</td>
+<td>Add report links to test plans, sequential CI jobs, remove Auto Verify <code>4e05d25f</code></td>
+</tr>
+<tr>
+<td>2026-03-24</td>
+<td>PLAN EDIT</td>
+<td>e2e-negative-edge-cases.md</td>
+<td>Add report links to test plans, sequential CI jobs, remove Auto Verify <code>4e05d25f</code></td>
+</tr>
+<tr>
+<td>2026-03-24</td>
+<td>PLAN EDIT</td>
+<td>e2e-personal-loan-application.md</td>
+<td>Add report links to test plans, sequential CI jobs, remove Auto Verify <code>4e05d25f</code></td>
+</tr>
+<tr>
+<td>2026-04-01</td>
+<td>PLAN EDIT</td>
+<td>e2e-personal-loan-application.md</td>
+<td>Simplify CI to entity-loan only, update templates with anti-script guardrails, remove Auto Verify <code>8d607bac</code></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2>Test Plan Change History</h2>
+<h3>e2e-entity-loan-application.md</h3>
+<p><strong>Total edits:</strong> 7</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Date</th>
+<th>Commit</th>
+<th>Message</th>
+</tr></thead><tbody>
+<tr>
+<td>2026-03-24</td>
+<td><code>4e05d25f</code></td>
+<td>Add report links to test plans, sequential CI jobs, remove Auto Verify</td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td><code>94e9c337</code></td>
+<td>Assert spouse appears in verification when married in community of property</td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td><code>61b8a6d2</code></td>
+<td>Update entity test plan: resolution flow, testmail for all directors</td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td><code>774e30dd</code></td>
+<td>Rewrite TC-06: per-individual verification with full assertions</td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td><code>8c04c265</code></td>
+<td>Add consent flow (TC-05c) with testmail.app for email/OTP verification</td>
+</tr>
+<tr>
+<td>2026-03-18</td>
+<td><code>165f585b</code></td>
+<td>Add E2E Entity (Close Corporation) loan test plan, report, and CI support</td>
+</tr>
+<tr>
+<td>2026-03-17</td>
+<td><code>8e8965cb</code></td>
+<td>Initial commit: E2E Playwright tests for LandBank CRM</td>
+</tr>
+</tbody></table></div>
+<h3>e2e-negative-edge-cases.md</h3>
+<p><strong>Total edits:</strong> 2</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Date</th>
+<th>Commit</th>
+<th>Message</th>
+</tr></thead><tbody>
+<tr>
+<td>2026-03-24</td>
+<td><code>4e05d25f</code></td>
+<td>Add report links to test plans, sequential CI jobs, remove Auto Verify</td>
+</tr>
+<tr>
+<td>2026-03-18</td>
+<td><code>e286676a</code></td>
+<td>Add negative/edge case test plan, upgrade dashboard with assertions</td>
+</tr>
+</tbody></table></div>
+<h3>e2e-personal-loan-application.md</h3>
+<p><strong>Total edits:</strong> 6</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Date</th>
+<th>Commit</th>
+<th>Message</th>
+</tr></thead><tbody>
+<tr>
+<td>2026-04-01</td>
+<td><code>8d607bac</code></td>
+<td>Simplify CI to entity-loan only, update templates with anti-script guardrails, remove Auto Verify</td>
+</tr>
+<tr>
+<td>2026-03-24</td>
+<td><code>4e05d25f</code></td>
+<td>Add report links to test plans, sequential CI jobs, remove Auto Verify</td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td><code>94e9c337</code></td>
+<td>Assert spouse appears in verification when married in community of property</td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td><code>774e30dd</code></td>
+<td>Rewrite TC-06: per-individual verification with full assertions</td>
+</tr>
+<tr>
+<td>2026-03-19</td>
+<td><code>8c04c265</code></td>
+<td>Add consent flow (TC-05c) with testmail.app for email/OTP verification</td>
+</tr>
+<tr>
+<td>2026-03-17</td>
+<td><code>8e8965cb</code></td>
+<td>Initial commit: E2E Playwright tests for LandBank CRM</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2>Correlation Alerts</h2>
+<blockquote>
+<p>Runs that failed within 2 days of a plan edit:</p>
+</blockquote>
+<p>No correlations found — failures did not coincide with recent plan edits.</p>
+</main>
+<footer>
+  <p>Generated 2026-04-01 14:48 &mdash; <a href="https://github.com/Tshepiso-R/markdown-tests">markdown-tests</a></p>
+</footer>
+</body>
+</html>

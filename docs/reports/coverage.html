@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coverage Gaps — Test Suite Dashboard</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-brand">Test Suite Dashboard</a>
+  <div class="nav-links">
+    <a href="quality.html" class="">Report Completeness</a><a href="cost.html" class="">Cost Report</a><a href="duration.html" class="">Duration Tracker</a><a href="failures.html" class="">Failure Heatmap</a><a href="flaky.html" class="">Flaky Tests</a><a href="drift.html" class="">Drift History</a><a href="coverage.html" class="active">Coverage Gaps</a><a href="stale.html" class="">Stale Plans</a>
+  </div>
+</nav>
+<main>
+<h1>Coverage Gap Report</h1>
+<p><strong>Generated:</strong> 2026-04-01T13:41</p>
+<hr>
+<h2>Test Plan Coverage</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Plan</th>
+<th>TCs Defined</th>
+<th>TCs Executed (ever)</th>
+<th>Coverage</th>
+</tr></thead><tbody>
+<tr>
+<td>e2e-entity-loan-application.md</td>
+<td>0</td>
+<td>0</td>
+<td>0%</td>
+</tr>
+<tr>
+<td>e2e-negative-edge-cases.md</td>
+<td>0</td>
+<td>0</td>
+<td>0%</td>
+</tr>
+<tr>
+<td>e2e-personal-loan-application.md</td>
+<td>0</td>
+<td>0</td>
+<td>0%</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2>Feature Coverage Matrix</h2>
+<blockquote>
+<p>Checks each app feature against test plan mentions.</p>
+</blockquote>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Feature</th>
+<th>Has Test Plan</th>
+<th>Has Been Run</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr>
+<td>Lead Creation</td>
+<td><strong>No</strong></td>
+<td>Yes</td>
+<td><strong>GAP</strong></td>
+</tr>
+<tr>
+<td>Pre-Screening</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+<tr>
+<td>Opportunity Setup - Client Info</td>
+<td><strong>No</strong></td>
+<td>Yes</td>
+<td><strong>GAP</strong></td>
+</tr>
+<tr>
+<td>Opportunity Setup - Loan Info</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+<tr>
+<td>Opportunity Setup - Farms</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+<tr>
+<td>Entity - Directors</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+<tr>
+<td>Entity - Signatories</td>
+<td><strong>No</strong></td>
+<td>Yes</td>
+<td><strong>GAP</strong></td>
+</tr>
+<tr>
+<td>Initiate Loan Application</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+<tr>
+<td>Consent Flow - Personal</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+<tr>
+<td>Resolution Flow - Entity</td>
+<td>Yes</td>
+<td>No</td>
+<td>Planned, not run</td>
+</tr>
+<tr>
+<td>Verification Review</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+<tr>
+<td>Onboarding Checklist</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+<tr>
+<td>Negative - Pre-Screening Failures</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+<tr>
+<td>Negative - Loan Validation</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+<tr>
+<td>Negative - Field Validation</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+<tr>
+<td>Negative - Workflow Edge Cases</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Covered</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2>Test Cases Never Executed</h2>
+<p>All defined test cases have been executed at least once.</p>
+<hr>
+<h2>Suggested New Test Areas</h2>
+<ul>
+<li>Multi-browser testing (Chrome, Firefox, Edge)</li>
+<li>Mobile responsive testing (viewport sizes)</li>
+<li>Concurrent user testing (two RMs editing same opportunity)</li>
+<li>Session timeout handling</li>
+<li>File upload scenarios (documents, oversized files)</li>
+<li>Pagination and sorting on table views</li>
+<li>Search/filter functionality on Leads and Opportunities tables</li>
+<li>Permission-based access (admin vs RM vs read-only)</li>
+<li>Data export/download functionality</li>
+<li>Audit trail / activity log verification</li>
+</ul>
+</main>
+<footer>
+  <p>Generated 2026-04-01 14:48 &mdash; <a href="https://github.com/Tshepiso-R/markdown-tests">markdown-tests</a></p>
+</footer>
+</body>
+</html>
