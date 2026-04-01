@@ -48,6 +48,58 @@
           }
         }
       }
+    },
+    "e2e-entity-loan-application": {
+      "file": "test-plans/e2e-entity-loan-application.md",
+      "azdoPlanId": 99224,
+      "azdoPlanUrl": "https://dev.azure.com/boxfusion/markdown-test/_testPlans/execute?planId=99224",
+      "rootSuiteId": 99225,
+      "lastSyncDate": "2026-04-01T11:50:00Z",
+      "suites": {
+        "PHASE 1: Lead Capture": {
+          "azdoSuiteId": 99226,
+          "testCases": {
+            "TC-01": { "azdoWorkItemId": 99237, "title": "Create Close Corporation (Entity) lead" }
+          }
+        },
+        "PHASE 2: Pre-Screening": {
+          "azdoSuiteId": 99227,
+          "testCases": {
+            "TC-02": { "azdoWorkItemId": 99238, "title": "Initiate Pre-Screening — all criteria pass" }
+          }
+        },
+        "PHASE 3: Opportunity Setup": {
+          "azdoSuiteId": 99228,
+          "testCases": {
+            "TC-03": { "azdoWorkItemId": 99239, "title": "Edit Entity Info — fill all mandatory fields" },
+            "TC-03a": { "azdoWorkItemId": 99240, "title": "Add Directors" },
+            "TC-03b": { "azdoWorkItemId": 99242, "title": "Add Signatories" },
+            "TC-04": { "azdoWorkItemId": 99243, "title": "Fill Loan Info — Products, Amount, Purpose" }
+          }
+        },
+        "PHASE 4: Initiate Loan Application": {
+          "azdoSuiteId": 99229,
+          "testCases": {
+            "TC-05": { "azdoWorkItemId": 99244, "title": "Initiate Loan Application" },
+            "TC-05a": { "azdoWorkItemId": 99245, "title": "Initiate without Requested Amount (negative)" },
+            "TC-05b": { "azdoWorkItemId": 99246, "title": "Initiate without Product (negative)" },
+            "TC-05r": { "azdoWorkItemId": 99247, "title": "Sign Company Resolution (ALL Directors)" },
+            "TC-05c": { "azdoWorkItemId": 99248, "title": "Upload Entity Consent" }
+          }
+        },
+        "PHASE 5: Confirm Verification Outcomes": {
+          "azdoSuiteId": 99230,
+          "testCases": {
+            "TC-06": { "azdoWorkItemId": 99249, "title": "Review and finalise entity verification" }
+          }
+        },
+        "PHASE 6: Complete Onboarding Checklist": {
+          "azdoSuiteId": 99231,
+          "testCases": {
+            "TC-07": { "azdoWorkItemId": 99250, "title": "Fill and submit pre-onboarding checklist" }
+          }
+        }
+      }
     }
   }
 }
