@@ -200,6 +200,60 @@ These IDs are shared across all test plans. **Never generate new ones** — each
 
 ---
 
+## How to Contribute
+
+### Adding a Test Case to an Existing Plan
+
+1. Open the test plan file (e.g., `test-plans/e2e-personal-loan-application.md`)
+2. Find the Phase where your test case belongs
+3. Add a new `### TC-XX:` section following the format:
+   - **Type** — Happy path, Negative, or Edge case
+   - **Prerequisites** — what must be true before this runs (which TCs must pass, what data/state exists)
+   - **Login** — which account
+   - **Steps** — numbered, with expected result after every action (e.g., `Click Save → Form returns to read-only mode`)
+   - **Input data** — table of fields, values, and types
+   - **Expected result** — overall outcome
+   - **Assertions** — checkboxes for each thing to verify
+4. Commit and push
+5. Re-sync to AzDO: "Re-sync [plan] to Azure DevOps"
+
+### Creating a New Test Plan
+
+1. Copy `test-plans/TEMPLATE.md` → `test-plans/e2e-[your-scenario].md`
+2. Fill in all sections:
+   - **Meta** — module, URL, accounts, test data
+   - **User Journey Overview** — tree diagram of the full flow
+   - **Accounts Used** — table of roles and credentials (use env vars, never hardcode passwords)
+   - **Phases** — group test cases by workflow stage
+   - **Test Cases** — follow the format above
+   - **Rules** — any module-specific rules that override or extend RULES.md
+3. Review with the team before first run
+4. Sync to AzDO: "Sync test-plans/[your-plan].md to Azure DevOps"
+5. Add to CI workflow in `.github/workflows/e2e-test.yml` if it should run nightly
+
+### Updating a Test Plan After Drift
+
+When a test report flags changes in the "Changes Detected" section:
+
+1. Read the drift report — it lists what changed and suggests specific edits
+2. **If the change is intentional** (app was updated): apply the suggested edits to the test plan
+3. **If the change is unexpected** (possible bug): file a bug instead of updating the plan
+4. After updating, re-sync to AzDO to keep both in sync
+5. Commit with a message like: "Update [plan] — [what changed] (drift from [report date])"
+
+### Contribution Checklist
+
+- [ ] Every step has an expected result (never blank)
+- [ ] Every test case has prerequisites listed
+- [ ] Test data uses approved IDs from RULES.md (never new ones)
+- [ ] Emails use testmail.app addresses (never personal/company emails)
+- [ ] Negative tests assert the exact error message text
+- [ ] Assertions include toast messages and status badge values
+- [ ] No hardcoded credentials anywhere
+- [ ] Test plan reads correctly without needing to run it (someone should understand the flow just by reading)
+
+---
+
 ## Quick Reference
 
 | I want to... | Do this |
