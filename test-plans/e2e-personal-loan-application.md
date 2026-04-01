@@ -12,20 +12,6 @@
 
 ---
 
-## Reports
-
-| Date | Report | Trigger | Result |
-|------|--------|---------|--------|
-| 2026-03-19 | [CI Nightly — 2026-03-19](../test-reports/personal-loan/e2e-personal-loan-application-ci-23276371190-2026-03-19T02-22.md) | Scheduled | Pass |
-| 2026-03-19 | [Local Run — 2026-03-19](../test-reports/personal-loan/personal-loan-2026-03-19T15-18.md) | Manual | Pass |
-| 2026-03-18 | [CI Run — 2026-03-18](../test-reports/personal-loan/e2e-personal-loan-application-ci-23260437980-2026-03-18T18-42.md) | CI | Pass |
-| 2026-03-18 | [Local Run 3 — 2026-03-18](../test-reports/personal-loan/e2e-personal-loan-run3-2026-03-18.md) | Manual | Pass |
-| 2026-03-18 | [Local Run 2 — 2026-03-18](../test-reports/personal-loan/e2e-personal-loan-run2-2026-03-18.md) | Manual | Pass |
-| 2026-03-17 | [Local Run 2 — 2026-03-17](../test-reports/personal-loan/e2e-personal-loan-run2-2026-03-17.md) | Manual | Pass |
-| 2026-03-17 | [Initial Run — 2026-03-17](../test-reports/personal-loan/workflow-end-to-end-2026-03-17.md) | Manual | Pass |
-
----
-
 ## User Journey Overview
 
 ```
@@ -581,3 +567,4 @@ The following must be completed before "Initiate Loan Application" is enabled:
 8. **Edit after workflow start** — can Client Info be edited while in Verification In Progress?
 9. **Different RM role** — test with other RM accounts (Bonolo Lebelo, etc.)
 10. **Compliance tab** — visible for admin but not RM; what does it contain?
+

@@ -43,9 +43,12 @@ Please:
 
 Use the markdown-driven testing approach:
 - Test plans are markdown files in test-plans/
-- Claude reads the plan and drives the browser via MCP Playwright
+- Claude reads the plan and drives the browser directly via MCP browser tools (snapshot, click, fill, etc.)
 - Reports are saved to test-reports/ with pass/fail assertions
 - No traditional test scripts — markdown is the source of truth
+- Do NOT generate Playwright, Cypress, Selenium, or any other test framework code
+- Do NOT write .spec.ts, .test.js, or any script files
+- Always read CLAUDE.md and test-plans/RULES.md before executing any test plan
 ```
 
 ---
@@ -77,19 +80,23 @@ your-project/
 # CLAUDE.md – Markdown-Driven Testing
 
 This project uses markdown files to define and execute tests.
-No scripts — Claude drives the browser directly from test plan definitions.
+No scripts — Claude drives the browser directly from test plan definitions using MCP browser tools.
+
+> **IMPORTANT:** This is NOT a Playwright/Cypress/Selenium project. Do NOT generate test scripts or .spec.ts/.test.js files.
+> Claude reads markdown test plans and executes them by driving the browser directly via MCP tools (browser_snapshot, browser_click, browser_fill_form, etc.).
 
 ## How It Works
 1. Test plans live in `test-plans/` as `.md` files
-2. Claude reads a test plan, opens the browser, and executes each test case
+2. Claude reads a test plan, opens the browser, and executes each test case using MCP browser tools
 3. Results are saved to `test-reports/[scenario]-[date].md`
 
 ## Running Tests
 When asked to run a test plan:
-1. Read `test-plans/RULES.md` first
-2. Read the target test plan
-3. Execute each test case using browser tools (snapshot, click, fill, assert)
-4. Generate a report in `test-reports/`
+1. Read `CLAUDE.md` (this file) first
+2. Read `test-plans/RULES.md` — execution rules that govern every test run
+3. Read the target test plan fully before touching the browser
+4. Execute each test case using MCP browser tools (snapshot, click, fill, assert)
+5. Generate a report in `test-reports/`
 
 ## Key Rules
 - Never guess — always snapshot the browser before acting
@@ -97,6 +104,7 @@ When asked to run a test plan:
 - On failure: screenshot, note what happened, continue to next test case
 - Every assertion must be explicitly checked and marked pass/fail
 - Reuse existing test data — don't create new records unless required
+- NEVER generate Playwright, Cypress, Selenium, or any test framework code
 ```
 
 ---
@@ -162,10 +170,29 @@ When asked to run a test plan:
 
 ---
 
-## 4. Test Plan Template
+## 4. Test Plan Template 
 
 ```markdown
 # Test Plan: [Feature Name]
+
+## How To Run This Test Plan
+
+> **This is NOT a Playwright test.** Do not generate Playwright scripts, test files, or any automated test code.
+
+**Before executing:**
+1. Read `CLAUDE.md` (project root) — understand how this project works
+2. Read `test-plans/RULES.md` — execution rules that govern every test run
+3. Read this test plan fully before touching the browser
+
+**Execution method:** Claude drives the browser directly using MCP browser tools (`browser_navigate`, `browser_snapshot`, `browser_click`, `browser_fill_form`, etc.). Each step is executed manually through the browser — snapshot before acting, click/fill using element refs from the snapshot, snapshot after to verify.
+
+**Do NOT:**
+- Generate Playwright, Cypress, Selenium, or any other test framework code
+- Write `.spec.ts`, `.test.js`, or any script files
+- Use `browser_evaluate` for UI interaction — only `browser_snapshot` + MCP actions
+- Skip reading RULES.md or CLAUDE.md before starting
+
+---
 
 ## Meta
 | Field        | Value                          |
