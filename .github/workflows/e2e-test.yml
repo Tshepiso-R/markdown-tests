@@ -67,11 +67,77 @@ jobs:
           TESTMAIL_API_KEY: ${{ secrets.TESTMAIL_API_KEY }}
           TESTMAIL_NAMESPACE: ${{ secrets.TESTMAIL_NAMESPACE }}
 
+      # ─────────────────────────────────────────────────────────
+      # ALLURE — convert markdown report → JSON → HTML, publish
+      # to gh-pages branch at runs/<run_id>/ for per-run viewing
+      # ─────────────────────────────────────────────────────────
+      - name: Set up Python (Allure converter)
+        if: always()
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Allure CLI
+        if: always()
+        run: npm install -g allure-commandline --no-audit --no-fund
+
+      - name: Convert markdown reports → Allure JSON
+        if: always()
+        run: python reporting/convert-to-allure.py --all || true
+
+      - name: Restore Allure history (for trends)
+        if: always()
+        continue-on-error: true
+        run: |
+          git fetch origin gh-pages --depth=1 2>/dev/null || true
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git --work-tree=/tmp/ghp checkout origin/gh-pages -- runs/latest/history 2>/dev/null && \
+              mkdir -p reporting/allure-results/history && \
+              cp -r /tmp/ghp/runs/latest/history/* reporting/allure-results/history/ || true
+          fi
+
+      - name: Generate Allure HTML report
+        if: always()
+        run: allure generate reporting/allure-results -o reporting/allure-report --clean
+
+      - name: Publish Allure report to gh-pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: reporting/allure-report
+          destination_dir: runs/${{ github.run_id }}
+          keep_files: true
+          commit_message: "Allure: entity-loan run #${{ github.run_number }}"
+
+      - name: Mirror latest Allure to /runs/latest
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: reporting/allure-report
+          destination_dir: runs/latest
+          keep_files: false
+          commit_message: "Allure: latest pointer → run #${{ github.run_number }}"
+
       - name: Post report to summary
         if: always()
+        env:
+          ALLURE_URL: "https://tshepiso-r.github.io/markdown-tests/runs/${{ github.run_id }}/"
+          LATEST_URL: "https://tshepiso-r.github.io/markdown-tests/runs/latest/"
         run: |
           REPORT="test-reports/${{ steps.report.outputs.name }}.md"
           REPO_URL="https://github.com/${{ github.repository }}/blob/main"
+          {
+            echo "## 📊 Allure Dashboard"
+            echo "**[▶ View this run's interactive Allure report](${ALLURE_URL})**"
+            echo ""
+            echo "_Latest:_ [${LATEST_URL}](${LATEST_URL})"
+            echo ""
+            echo "---"
+          } >> $GITHUB_STEP_SUMMARY
           if [ -f "$REPORT" ]; then
             echo "## Entity Loan — E2E Test Report" >> $GITHUB_STEP_SUMMARY
             echo "**Trigger:** ${{ steps.report.outputs.prefix }} | **Date:** $(date -u +%Y-%m-%d) | **Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
@@ -162,6 +228,11 @@ jobs:
                       \"type\": \"Action.OpenUrl\",
                       \"title\": \"View Run\",
                       \"url\": \"${RUN_URL}\"
+                    },
+                    {
+                      \"type\": \"Action.OpenUrl\",
+                      \"title\": \"Allure Dashboard\",
+                      \"url\": \"https://tshepiso-r.github.io/markdown-tests/runs/${{ github.run_id }}/\"
                     },
                     {
                       \"type\": \"Action.OpenUrl\",
