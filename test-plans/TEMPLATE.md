@@ -1,33 +1,21 @@
 # Test Plan: [Module Name]
 
-## How To Run This Test Plan
-
-> **This is NOT a Playwright test.** Do not generate Playwright scripts, test files, or any automated test code.
-
-**Before executing:**
-1. Read `CLAUDE.md` (project root) — understand how this project works
-2. Read `test-plans/RULES.md` — execution rules that govern every test run
-3. Read this test plan fully before touching the browser
-
-**Execution method:** Claude drives the browser directly using MCP browser tools (`browser_navigate`, `browser_snapshot`, `browser_click`, `browser_fill_form`, etc.). Each step is executed manually through the browser — snapshot before acting, click/fill using element refs from the snapshot, snapshot after to verify.
-
-**Do NOT:**
-- Generate Playwright, Cypress, Selenium, or any other test framework code
-- Write `.spec.ts`, `.test.js`, or any script files
-- Use `browser_evaluate` for UI interaction — only `browser_snapshot` + MCP actions
-- Skip reading RULES.md or CLAUDE.md before starting
+> **Not a Playwright test.** Claude drives the browser directly via MCP tools.
+> Before executing: read `CLAUDE.md` → `test-plans/RULES.md` → this plan (in full).
 
 ---
 
 ## Meta
+
 | Field        | Value                                                              |
 |-------------|--------------------------------------------------------------------|
 | Module      | e.g. Full Journey — Lead → Opportunity → Workflow → Complete       |
+| App         | e.g. LandBank CRM (QA) / SA Gov Bursary Management (DEV)          |
 | URL         | {{BASE_URL}} = landbankcrm-adminportal-qa.shesha.app               |
 | Prereqs     | e.g. Admin account for lead creation; RM account (Fatima) for workflow |
 | Last tested | YYYY-MM-DD                                                         |
 | Status      | Pass / Fail / Partial / Not yet run                                |
-| Test Data   | e.g. Ian Houvet, ID: 7708206169188, Email: 5s9ku.consent-[timestamp]@inbox.testmail.app |
+| Test Data   | e.g. Ian Houvet, ID: 7708206169188, Email: guwn6.consent-[timestamp]@inbox.testmail.app |
 
 ---
 
@@ -35,7 +23,7 @@
 
 | Date | Report | Trigger | Result |
 |------|--------|---------|--------|
-| YYYY-MM-DD | [Report Name](../test-reports/[module]/[report-file].md) | Scheduled / Manual / CI | Pass / Fail |
+| YYYY-MM-DD | [Report Name](../test-reports/[module]/[report-file].md) | Manual / CI | Pass / Fail |
 
 ---
 
@@ -47,16 +35,13 @@
 | AzDO Plan URL | _(populated after sync)_ |
 | Last synced | _(populated after sync)_ |
 
-> To sync this test plan to Azure DevOps Test Plans, run: "Sync this test plan to Azure DevOps"
-> See `azdo-sync/SYNC-PLAYBOOK.md` for details.
+> Sync: "Sync this test plan to Azure DevOps" — see `azdo-sync/SYNC-PLAYBOOK.md`
 
 ---
 
 ## User Journey Overview
 
 ```
-Describe the full user journey as a tree:
-
 PHASE 1: [First step]
   └─ [Action]
        └─ [Expected status change]
@@ -64,6 +49,11 @@ PHASE 1: [First step]
 PHASE 2: [Next step]
   └─ [Action]
        └─ [Expected status change]
+
+For non-sequential plans (negative/edge cases), use AREA instead of PHASE:
+
+AREA 1: [Category]
+  └─ [What is being tested]
 ```
 
 ---
@@ -75,14 +65,16 @@ PHASE 2: [Next step]
 | System Administrator | admin | (from env) | Phase 1, Phase 2 |
 | RM (Relationship Manager) | fatima.abrahams@landbank.co.za | (from env) | Phase 3–6 |
 
+> Never hardcode passwords in plans — use env variables or `(from env)` placeholder.
+
 ---
 
 ## PHASE 1: [Phase Name]
 
 ### TC-01: [Short description]
-- **Type:** Happy path
+- **Type:** Happy path / Negative / Edge case
 - **Login:** admin
-- **URL:** {{BASE_URL}}/dynamic/[module]/[page]
+- **Prereqs:** None (first test) / TC-XX must pass / [specific state required]
 - **Steps:**
   1. Navigate to [page] via sidebar menu
   2. Click [button]
@@ -92,13 +84,12 @@ PHASE 2: [Next step]
   | Field | Value | Type | Required |
   |-------|-------|------|----------|
   | Field Name | Value | Text / Dropdown / Searchable dropdown / Checkbox | Yes / No |
-  | Field Name | Value | Type | Yes / No |
-- **Expected result:** [What should happen — toast message, status change, etc.]
+- **Expected result:** [What should happen — toast message, status change, redirect, etc.]
 - **Assertions:**
-  - [ ] [Specific thing to verify — e.g. toast message text]
+  - [ ] [Toast message text — e.g. "Data saved successfully!"]
   - [ ] [Status badge shows expected value]
-  - [ ] [Record visible in table]
-  - [ ] [All fields saved correctly]
+  - [ ] [Record visible in table / link appears / button disappears]
+  - [ ] [All fields saved correctly — check ALL tabs after save]
 
 ### Dropdown Values — [Section Name]
 | Field | Options |
@@ -112,8 +103,9 @@ PHASE 2: [Next step]
 ### TC-02: [Short description]
 - **Type:** Happy path
 - **Login:** admin or RM
+- **Prereqs:** TC-01 must pass
 - **Steps:**
-  1. [Action]
+  1. [Action — be specific: "Click Edit", "Switch to Loan Info tab"]
   2. [Action]
 - **Expected result:** [What should happen]
 - **Assertions:**
@@ -122,12 +114,28 @@ PHASE 2: [Next step]
 
 ### TC-03: [Short description — negative test]
 - **Type:** Negative
+- **Login:** admin
+- **Prereqs:** [State needed — e.g. "An unconverted lead with status New"]
 - **Steps:**
-  1. [Action that should fail]
-- **Expected result:** Error message shown
+  1. [Action that should fail — be specific about what to do wrong]
+- **Expected result:** Error message shown, no state change
 - **Assertions:**
-  - [ ] Error: "[expected error message]"
-  - [ ] Status remains unchanged
+  - [ ] Error: "[expected error message text]"
+  - [ ] Status remains [expected status]
+
+---
+
+## Consent / OTP Flow (if applicable)
+
+> Delete this section if the module doesn't involve consent.
+
+| Step | Action | Expected |
+|------|--------|----------|
+| 1 | [Trigger action] | Status → [e.g. Consent Pending] |
+| 2 | Retrieve email via testmail.app API (tag: `consent-[timestamp]`) | Subject: "[expected subject]" |
+| 3 | Extract URL from email, open in browser | [Expected page loads] |
+| 4 | Request OTP → retrieve OTP email → submit | OTP accepted |
+| 5 | Sign consent/resolution | Status → [e.g. Verification In Progress] |
 
 ---
 
@@ -139,33 +147,15 @@ PHASE 2: [Next step]
 | Phase 2 | [Action] | [Status] | — |
 | Phase 3 | [Action] | [Status] | In Progress |
 
+> Every status transition must be explicitly asserted in the test case.
+
 ---
 
-## Rules
+## Module-Specific Rules
 
-> Module-specific rules that override or extend RULES.md.
+> Rules that override or extend `RULES.md` for this module.
 
 - [Rule 1 — e.g. specific field must be filled before workflow can start]
 - [Rule 2 — e.g. province auto-maps to region]
 - [Rule 3 — e.g. conditional fields appear when X is selected]
-
----
-
-## Test Execution Record
-
-| TC | Description | Result | Date | Tester |
-|----|-------------|--------|------|--------|
-| TC-01 | [Description] | Pass / Fail | YYYY-MM-DD | [Who ran it] |
-| TC-02 | [Description] | Pass / Fail | YYYY-MM-DD | [Who ran it] |
-
-**Lead:** [Name] (ID: [guid])
-**Opportunity:** [Name] (ID: [guid])
-**Workflow Ref:** [Ref number]
-
----
-
-## Still To Test
-
-1. [Scenario not yet covered]
-2. [Edge case to investigate]
-3. [Alternative path to test]
+- [Rule 4 — e.g. all directors must sign before status progresses]

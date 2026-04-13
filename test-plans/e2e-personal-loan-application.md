@@ -8,7 +8,7 @@
 | Prereqs     | Admin account for lead creation; RM account (Fatima) for workflow   |
 | Last tested | 2026-03-17                                                         |
 | Status      | Pass                                                               |
-| Test Data   | Ian Houvet, ID: 7708206169188, Email: 5s9ku.consent-[timestamp]@inbox.testmail.app |
+| Test Data   | Ian Houvet, ID: 7708206169188, Email: guwn6.consent-[timestamp]@inbox.testmail.app |
 
 ---
 
@@ -85,7 +85,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | IanH33468 (unique per run) | Text | Yes |
   | Last Name | Houvet | Text | Yes |
   | Mobile Number | 0712345678 | Text | Yes |
-  | Email Address | 5s9ku.consent-[timestamp]@inbox.testmail.app | Text | Yes |
+  | Email Address | guwn6.consent-[timestamp]@inbox.testmail.app | Text | Yes |
   | Client Type | Individual (Individual) | Dropdown | Yes |
   | Province | Gauteng | Dropdown | Yes |
   | Preferred Communication | Email | Dropdown | Yes |
@@ -170,7 +170,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | Client ID Number | 7708206169188 | Manual entry |
   | Client Name | Ian | Edit (was unique lead name) |
   | Client Surname | Houvet | Pre-filled |
-  | Email Address | 5s9ku.consent-[timestamp]@inbox.testmail.app | Pre-filled |
+  | Email Address | guwn6.consent-[timestamp]@inbox.testmail.app | Pre-filled |
   | Mobile Number | 0712345678 | Pre-filled |
   | Client Title | Mr | Pre-filled |
   | Preferred Communication | Email | Pre-filled |
@@ -320,10 +320,10 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
 ### Testmail.app API (for consent/OTP emails)
 | Field | Value |
 |-------|-------|
-| Namespace | 5s9ku |
-| API Key | b300bfdf-3e55-4478-9e27-072849073ed4 |
+| Namespace | guwn6 |
+| API Key | 3177ae4f-ef43-49c7-927c-8293ec28a204 |
 | Inbox domain | @inbox.testmail.app |
-| Email format | 5s9ku.{tag}@inbox.testmail.app |
+| Email format | guwn6.{tag}@inbox.testmail.app |
 | API endpoint | GET https://api.testmail.app/api/json?apikey={key}&namespace={ns}&tag={tag}&livequery=true&timeout=60000 |
 
 ---

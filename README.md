@@ -120,7 +120,7 @@ CI runs use Claude Code Action (`anthropics/claude-code-action@v1`) with Playwri
 
 **Entity:** Boxfusion, Registration: 2012/225386/07
 
-**Email:** All emails use testmail.app (`5s9ku.[tag]@inbox.testmail.app`) for programmatic consent/OTP retrieval.
+**Email:** All emails use testmail.app (`guwn6.[tag]@inbox.testmail.app`) for programmatic consent/OTP retrieval.
 
 ---
 

@@ -223,7 +223,7 @@ For EACH individual listed in verifications:
 
 **Entity registration:** 2012/225386/07 (Boxfusion)
 
-**Email address:** Use testmail.app — `5s9ku.consent-[unique]@inbox.testmail.app`
+**Email address:** Use testmail.app — `guwn6.consent-[unique]@inbox.testmail.app`
 - Do NOT use `promise.raganya@boxfusion.io` — that inbox can't be queried programmatically
 - The tag (e.g. `consent-1710850000000`) must be unique per run for email isolation
 
@@ -242,13 +242,13 @@ For EACH individual listed in verifications:
 | Field | Value |
 |-------|-------|
 | Service | testmail.app |
-| Namespace | 5s9ku |
-| API Key | b300bfdf-3e55-4478-9e27-072849073ed4 |
-| Email format | `5s9ku.{tag}@inbox.testmail.app` |
+| Namespace | guwn6 |
+| API Key | 3177ae4f-ef43-49c7-927c-8293ec28a204 |
+| Email format | `guwn6.{tag}@inbox.testmail.app` |
 
 **API call to retrieve emails:**
 ```
-GET https://api.testmail.app/api/json?apikey=b300bfdf-3e55-4478-9e27-072849073ed4&namespace=5s9ku&tag={tag}&livequery=true&timeout=60000
+GET https://api.testmail.app/api/json?apikey=3177ae4f-ef43-49c7-927c-8293ec28a204&namespace=guwn6&tag={tag}&livequery=true&timeout=60000
 ```
 
 **Personal loan consent flow:**

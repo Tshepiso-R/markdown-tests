@@ -8,7 +8,7 @@
 | Prereqs     | Admin account for lead creation; RM account (Fatima) for workflow   |
 | Last tested | 2026-03-18                                                         |
 | Status      | Pass                                                               |
-| Test Data   | Boxfusion (Entity), Reg: 2012/225386/07, Contact: Ian Houvet, Email: 5s9ku.consent-[timestamp]@inbox.testmail.app |
+| Test Data   | Boxfusion (Entity), Reg: 2012/225386/07, Contact: Ian Houvet, Email: guwn6.consent-[timestamp]@inbox.testmail.app |
 
 ---
 
@@ -104,7 +104,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | Entity76374 (unique per run) | Text | Yes |
   | Last Name | Houvet | Text | Yes |
   | Mobile Number | 0712345678 | Text | Yes |
-  | Email Address | 5s9ku.consent-[timestamp]@inbox.testmail.app | Text | Yes |
+  | Email Address | guwn6.consent-[timestamp]@inbox.testmail.app | Text | Yes |
   | Client Type | Close Corporation (Entity) | Dropdown | Yes |
   | Province | Gauteng | Dropdown | Yes |
   | Preferred Communication | Email | Dropdown | Yes |
@@ -208,7 +208,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | Contact Person Title | Mr | Dropdown |
   | Contact Person Name | Ian | Text |
   | Contact Person Surname | Houvet | Text |
-  | Contact Person Email | 5s9ku.consent-[timestamp]@inbox.testmail.app | Text |
+  | Contact Person Email | guwn6.consent-[timestamp]@inbox.testmail.app | Text |
   | Contact Person Mobile | 0712345678 | Text |
 - **Expected result:** "Data saved successfully!"
 - **Assertions:**
@@ -235,7 +235,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | Ian | Text |
   | Last Name | Houvet | Text |
   | ID Number | 7708206169188 | Text |
-  | Email | 5s9ku.consent-[timestamp]@inbox.testmail.app | Text |
+  | Email | guwn6.consent-[timestamp]@inbox.testmail.app | Text |
   | Mobile | 0712345678 | Text |
   | Citizenship | South Africa | Searchable dropdown |
   | Country Of Residence | South Africa | Searchable dropdown |
@@ -251,7 +251,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | Chamaine | Text |
   | Last Name | Houvet | Text |
   | ID Number | 7304190225085 | Text |
-  | Email | 5s9ku.dir2-[timestamp]@inbox.testmail.app | Text |
+  | Email | guwn6.dir2-[timestamp]@inbox.testmail.app | Text |
   | Mobile | 0712345679 | Text |
   | Citizenship | South Africa | Searchable dropdown |
   | Country Of Residence | South Africa | Searchable dropdown |
@@ -263,7 +263,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | Xolile | Text |
   | Last Name | Ndlangana | Text |
   | ID Number | 6311115651080 | Text |
-  | Email | 5s9ku.dir3-[timestamp]@inbox.testmail.app | Text |
+  | Email | guwn6.dir3-[timestamp]@inbox.testmail.app | Text |
   | Mobile | 0712345680 | Text |
   | Citizenship | South Africa | Searchable dropdown |
   | Country Of Residence | South Africa | Searchable dropdown |
@@ -294,7 +294,7 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
   | First Name | Ian | Text |
   | Last Name | Houvet | Text |
   | ID Number | 7708206169188 | Text |
-  | Email | 5s9ku.consent-[timestamp]@inbox.testmail.app | Text |
+  | Email | guwn6.consent-[timestamp]@inbox.testmail.app | Text |
   | Mobile | 0712345678 | Text |
 - **Expected result:** "Data saved successfully!" — 1 signatory listed
 - **Assertions:**
@@ -472,10 +472,10 @@ PHASE 6: Complete Onboarding Checklist (RM — Fatima)
 ### Testmail.app API (for consent/OTP emails)
 | Field | Value |
 |-------|-------|
-| Namespace | 5s9ku |
-| API Key | b300bfdf-3e55-4478-9e27-072849073ed4 |
+| Namespace | guwn6 |
+| API Key | 3177ae4f-ef43-49c7-927c-8293ec28a204 |
 | Inbox domain | @inbox.testmail.app |
-| Email format | 5s9ku.{tag}@inbox.testmail.app |
+| Email format | guwn6.{tag}@inbox.testmail.app |
 | API endpoint | GET https://api.testmail.app/api/json?apikey={key}&namespace={ns}&tag={tag}&livequery=true&timeout=60000 |
 
 ---

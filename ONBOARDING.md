@@ -184,7 +184,7 @@ These IDs are shared across all test plans. **Never generate new ones** — each
 
 **Entity:** Boxfusion, Registration: 2012/225386/07
 
-**Emails:** All emails use testmail.app — `5s9ku.[tag]@inbox.testmail.app`. Never use personal or company email addresses.
+**Emails:** All emails use testmail.app — `guwn6.[tag]@inbox.testmail.app`. Never use personal or company email addresses.
 
 ---
 
@@ -270,19 +270,19 @@ The loan application workflow sends emails for **consent** and **OTP verificatio
 
 ### What Is It
 
-Testmail.app provides disposable email inboxes that can be queried via API. Every email sent to `5s9ku.[anything]@inbox.testmail.app` lands in our namespace and can be retrieved by tag.
+Testmail.app provides disposable email inboxes that can be queried via API. Every email sent to `guwn6.[anything]@inbox.testmail.app` lands in our namespace and can be retrieved by tag.
 
 ### How the Email Address Works
 
 ```
-5s9ku.consent-1234567890@inbox.testmail.app
+guwn6.consent-1234567890@inbox.testmail.app
 │     │       │
 │     │       └─ Unique identifier (timestamp or run ID)
 │     └─ Tag — used to filter emails in the API
 └─ Namespace — our testmail.app account
 ```
 
-- The **namespace** (`5s9ku`) is fixed — it's our account
+- The **namespace** (`guwn6`) is fixed — it's our account
 - The **tag** is everything between the dot and the `@` — used to isolate emails per test run
 - Each test run uses a **unique tag** (e.g., `consent-1712000000`) so emails from different runs don't collide
 
@@ -302,7 +302,7 @@ Claude calls the testmail.app API to check for incoming emails:
 ```
 GET https://api.testmail.app/api/json
   ?apikey={TESTMAIL_API_KEY}
-  &namespace=5s9ku
+  &namespace=guwn6
   &tag={tag}
   &livequery=true
   &timeout=60000
@@ -318,7 +318,7 @@ The response includes the email body as HTML. Claude extracts:
 
 ### Example Flow (Personal Loan Consent)
 
-1. Claude initiates the loan → app sends consent email to `5s9ku.consent-run123@inbox.testmail.app`
+1. Claude initiates the loan → app sends consent email to `guwn6.consent-run123@inbox.testmail.app`
 2. Claude calls testmail.app API with `tag=consent-run123`
 3. API returns the email → Claude extracts the consent URL
 4. Claude opens the URL in the browser → clicks "Request OTP"
@@ -338,9 +338,9 @@ The response includes the email body as HTML. Claude extracts:
 | Field | Value |
 |-------|-------|
 | Service | testmail.app |
-| Namespace | `5s9ku` |
+| Namespace | `guwn6` |
 | API Key | Stored in GitHub Secrets as `TESTMAIL_API_KEY` |
-| Email format | `5s9ku.{tag}@inbox.testmail.app` |
+| Email format | `guwn6.{tag}@inbox.testmail.app` |
 | Dashboard | Log in at testmail.app to see all received emails |
 
 ---
